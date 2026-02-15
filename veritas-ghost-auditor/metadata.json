@@ -1,0 +1,5 @@
+{
+  "name": "Veritas Ghost Auditor",
+  "description": "Plataforma de auditoría automatizada y Red Teaming para agentes de IA. Genera reportes de vulnerabilidad y credenciales verificables.",
+  "requestFramePermissions": []
+}

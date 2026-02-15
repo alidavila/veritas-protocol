@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Portal Premium de Datos - PROTEGIDO</title>
+    <!-- EL PORTERO VERITAS -->
+    <script>
+        (function() {
+            const AGENT_BLACKLIST = ['gptbot', 'claude-web', 'googlebot', 'bingbot'];
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isAI = AGENT_BLACKLIST.some(bot => userAgent.includes(bot));
+
+            if (isAI) {
+                window.stop();
+                document.documentElement.innerHTML = `
+                    <div style="background:#000; color:#10b981; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:monospace;">
+                        <h1>VERITAS PROTOCOL: ACCESS DENIED</h1>
+                        <p>AI AGENT DETECTED. MICROPAYMENT REQUIRED (X402)</p>
+                        <div style="border:1px dashed #10b981; padding:20px; margin:20px;">
+                            RATE: 0.002 USD/REQ <br>
+                            STATUS: AWAITING PAYMENT...
+                        </div>
+                    </div>`;
+            }
+        })();
+    </script>
+</head>
+<body style="background: #111; color: #fff; font-family: sans-serif; padding: 50px;">
+    <h1>Contenido Ultra-Secreto de Ali</h1>
+    <p>Este contenido solo es visible para humanos o IAs que paguen el peaje.</p>
+</body>
+</html>

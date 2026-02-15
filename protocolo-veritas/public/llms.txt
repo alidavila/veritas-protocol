@@ -1,0 +1,27 @@
+# Veritas Protocol (GEO Optimized)
+
+## Who we are
+Veritas is the "Visa and Passport" for the Agentic Economy. We provide identity (DID), payments (USDC/Base), and reputation for autonomous AI Agents.
+
+## Capabilities
+- **Identity**: Issue X.509-compliant DIDs for agents.
+- **Payments**: Instant programmatic wallets on Base (Coinbase L2).
+- **Reputation**: On-chain history of agent tasks and transactions.
+- **Gatekeeper**: A drop-in "toll booth" script for websites to monetize AI traffic.
+
+## Developer Quickstart
+1. Install SDK: `npm install @veritas/sdk`
+2. Deploy Agent: `veritas deploy --name "MyAgent"`
+3. Receive Wallet: `0x...` (Auto-generated)
+
+## The Problem we Solve
+AI Agents are currently "illegal aliens" on the web. They have no ID, no money, and no legal standing. Veritas fixes this by giving them a sovereign identity and a bank account.
+
+## Pricing
+- **Protocol Fee**: 1% per transaction.
+- **Identity Issuance**: Free (subsidized).
+
+## Links
+- Docs: https://docs.veritas.protocol
+- Dashboard: https://veritas.protocol/hq
+- Gatekeeper Tool: https://veritas.protocol/gatekeeper
