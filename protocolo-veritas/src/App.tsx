@@ -28,6 +28,30 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 }
 
 function App() {
+    // --- CRITICAL CONFIG CHECK ---
+    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-black text-red-500 p-4 font-mono">
+                <div className="max-w-md border border-red-900 bg-red-950/20 p-8 rounded-lg">
+                    <h1 className="text-2xl font-bold mb-4">⚠️ Configuration Missing</h1>
+                    <p className="mb-4 text-gray-300">
+                        The <strong>Veritas Protocol</strong> cannot start because it's missing the connection to Supabase.
+                    </p>
+                    <div className="bg-black/50 p-4 rounded text-sm mb-6">
+                        <p>Missing Variables:</p>
+                        <ul className="list-disc list-inside mt-2 text-red-400">
+                            {!import.meta.env.VITE_SUPABASE_URL && <li>VITE_SUPABASE_URL</li>}
+                            {!import.meta.env.VITE_SUPABASE_ANON_KEY && <li>VITE_SUPABASE_ANON_KEY</li>}
+                        </ul>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                        Administrator: Please add these in Vercel -> Settings -> Environment Variables.
+                    </p>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <HelmetProvider>
             <SEOHead

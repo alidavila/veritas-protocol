@@ -1,8 +1,4 @@
 
-# 🚀 Deployment Guide: Veritas Protocol
-
-# 🚀 Deployment Guide: Veritas Protocol
-
 ## 🏗️ The Hybrid Architecture (Concept)
 
 Veritas runs in two places at once:
