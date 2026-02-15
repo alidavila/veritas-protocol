@@ -1,9 +1,24 @@
 
 # 🚀 Deployment Guide: Veritas Protocol
 
+# 🚀 Deployment Guide: Veritas Protocol
+
+## 🏗️ The Hybrid Architecture (Concept)
+
+Veritas runs in two places at once:
+
+1. **Vercel (Cloud)**: Hosts the Dashboard (UI). Fast, global, accessible.
+2. **Local/VPS (PM2)**: Runs the Agents. Persistent, secure wallet storage.
+
+*See `ARCHITECTURE.md` for a visual diagram.*
+
+---
+
 ## 1. Frontend (The Dashboard)
 
 ### Option A: Deploy to Vercel (Recommended)
+
+**Source Code**: [https://github.com/alidavila/veritas-protocol](https://github.com/alidavila/veritas-protocol)
 
 1. **Install Vercel CLI** (if not installed):
 
