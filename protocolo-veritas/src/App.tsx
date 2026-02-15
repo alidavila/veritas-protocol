@@ -48,7 +48,7 @@ function App() {
                         </ul>
                     </div>
                     <p className="text-xs text-gray-500">
-                        Administrator: Please add these in Vercel -> Settings -> Environment Variables.
+                        Administrator: Please add these in Vercel &rarr; Settings &rarr; Environment Variables.
                     </p>
                 </div>
             </div>
