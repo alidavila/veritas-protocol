@@ -1,6 +1,11 @@
 
 import { Helmet } from 'react-helmet-async'
-import { Users, Activity, LogOut, Wallet, Shield, Globe } from 'lucide-react'
+import { 
+    Users, Activity, LogOut, Wallet, Globe, 
+    Play, Square, Settings, Target, Mail, 
+    MessageSquare, DollarSign, ChevronRight,
+    Save, RefreshCw
+} from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { agentsService, Agent } from '../lib/agents'
@@ -15,13 +20,27 @@ const THEME = {
     border: 'border-zinc-800'
 }
 
+// Mock KPIs for visualization (until we connect real analytics)
+const MOCK_KPIS = [
+    { label: 'Leads Scraped', value: '1,240', change: '+12%', icon: Target, color: 'text-blue-500' },
+    { label: 'Emails Sent', value: '856', change: '+5%', icon: Mail, color: 'text-purple-500' },
+    { label: 'Engaged', value: '42', change: '+18%', icon: MessageSquare, color: 'text-orange-500' },
+    { label: 'Revenue', value: '$0.00', change: '0%', icon: DollarSign, color: 'text-emerald-500' },
+]
+
 export function DashboardPage() {
     const { signOut } = useAuth()
     const { ledger, treasury } = useVeritasState()
-    const [activeTab, setActiveTab] = useState('agents')
     const [agents, setAgents] = useState<Agent[]>([])
     const [loading, setLoading] = useState(true)
-
+    
+    // Mission Control State (Local for now, should sync to Supabase)
+    const [mission, setMission] = useState({
+        niche: "Real Estate Agents in Miami",
+        emailSubject: "Your listings are invisible to AI",
+        status: "ACTIVE"
+    })
+    const [isEditingStrategy, setIsEditingStrategy] = useState(false)
 
     useEffect(() => {
         fetchInitialData()
@@ -48,212 +67,256 @@ export function DashboardPage() {
         }
     }
 
-
+    const toggleAgent = (agentId: string, currentStatus: boolean) => {
+        // Logic to stop/start agent via Supabase would go here
+        console.log(`Toggling agent ${agentId} to ${!currentStatus}`)
+    }
 
     return (
-        <div className={`min-h-screen ${THEME.bg} text-white font-sans flex overflow-hidden`}>
+        <div className={`min-h-screen ${THEME.bg} text-white font-sans flex`}>
             <Helmet>
-                <title>Console | Veritas Protocol</title>
+                <title>CEO Cockpit | Veritas</title>
             </Helmet>
 
-            {/* Sidebar */}
-            <aside className={`w-64 border-r ${THEME.border} bg-zinc-950/50 p-6 flex flex-col backdrop-blur-xl`}>
-                <div className="flex items-center gap-3 mb-10 pl-2">
-                    <div className="w-8 h-8 bg-emerald-500/10 border border-emerald-500/50 rounded-lg flex items-center justify-center">
-                        <Globe className="w-5 h-5 text-emerald-500" />
-                    </div>
-                    <div>
-                        <span className="font-bold text-lg tracking-tight block leading-none">VERITAS</span>
-                        <span className="text-[10px] text-zinc-500 font-mono tracking-widest">USER VIEW</span>
+            {/* Sidebar (Collapsed for focus) */}
+            <aside className={`w-20 border-r ${THEME.border} bg-zinc-950/50 flex flex-col items-center py-6 backdrop-blur-xl`}>
+                <div className="mb-8">
+                    <div className="w-10 h-10 bg-emerald-500/10 border border-emerald-500/50 rounded-xl flex items-center justify-center">
+                        <Globe className="w-6 h-6 text-emerald-500" />
                     </div>
                 </div>
-
-                <nav className="space-y-1 flex-1">
-                    {[
-                        { id: 'agents', icon: Users, label: "My Agents" },
-                        { id: 'logs', icon: Activity, label: "Live Activity" },
-                    ].map((item) => (
-                        <button
-                            key={item.id}
-                            onClick={() => setActiveTab(item.id)}
-                            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm font-medium ${activeTab === item.id
-                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/50'}`}
-                        >
-                            <item.icon className="w-4 h-4" />
-                            <span>{item.label}</span>
-                        </button>
-                    ))}
+                
+                <nav className="flex-1 flex flex-col gap-4 w-full px-2">
+                    <button className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                        <Activity className="w-5 h-5" />
+                    </button>
+                    <button className="p-3 rounded-xl text-zinc-500 hover:bg-zinc-900 transition-colors">
+                        <Users className="w-5 h-5" />
+                    </button>
+                    <button className="p-3 rounded-xl text-zinc-500 hover:bg-zinc-900 transition-colors">
+                        <Settings className="w-5 h-5" />
+                    </button>
                 </nav>
 
-                <div className={`border-t ${THEME.border} pt-6 space-y-1`}>
-                    <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-red-500/70 hover:text-red-400 hover:bg-red-500/10 transition-colors text-sm"
-                    >
-                        <LogOut className="w-4 h-4" />
-                        <span>Sign Out</span>
-                    </button>
-                </div>
+                <button onClick={handleLogout} className="p-3 rounded-xl text-red-500/50 hover:bg-red-500/10 transition-colors">
+                    <LogOut className="w-5 h-5" />
+                </button>
             </aside>
 
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-black to-black">
-                {/* Header */}
-                <header className={`h-16 border-b ${THEME.border} flex justify-between items-center px-8 bg-black/50 backdrop-blur-sm sticky top-0 z-10`}>
-                    <div className="flex items-center gap-4">
-                        <span className="text-zinc-500 text-sm">Status:</span>
-                        <div className="flex items-center gap-2 px-3 py-1 bg-zinc-900 rounded-full border border-zinc-800">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                            <span className="text-sm font-bold">Online</span>
-                        </div>
+                
+                {/* Top Bar */}
+                <header className="h-20 border-b border-zinc-800 flex justify-between items-center px-8 bg-black/20 backdrop-blur-md sticky top-0 z-20">
+                    <div>
+                        <h1 className="text-xl font-bold tracking-tight">Mission Control</h1>
+                        <p className="text-xs text-zinc-500 font-mono">OPERATIONAL VIEW</p>
                     </div>
-
-                    <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-3 px-4 py-1.5 bg-zinc-900/50 border border-zinc-800 rounded-full hover:border-zinc-700 transition-colors cursor-pointer group">
-                            <Wallet className="w-4 h-4 text-zinc-500 group-hover:text-emerald-500 transition-colors" />
-                            <span className="text-sm font-mono text-zinc-300">
-                                {treasury > 0 ? `${treasury.toFixed(4)} ETH` : '$0.00 USDC'}
-                            </span>
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 px-4 py-2 bg-emerald-950/30 border border-emerald-500/20 rounded-full">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                            <span className="text-xs font-bold text-emerald-500 tracking-wide">SYSTEM ONLINE</span>
+                        </div>
+                        <div className="h-8 w-px bg-zinc-800"></div>
+                        <div className="flex items-center gap-2">
+                            <Wallet className="w-4 h-4 text-zinc-500" />
+                            <span className="font-mono text-zinc-300">{treasury.toFixed(4)} ETH</span>
                         </div>
                     </div>
                 </header>
 
-                <div className="p-8 max-w-6xl mx-auto">
-                    {/* TOP SUMMARY */}
-                    <div className="flex justify-between items-end mb-8">
-                        <div>
-                            <h1 className="text-3xl font-bold mb-2">
-                                {activeTab === 'agents' ? 'My Nodes' : 'Activity Stream'}
-                            </h1>
-                            <p className="text-zinc-500">
-                                {activeTab === 'agents' ? 'View your active agent deployments.' : 'Real-time ledger of your agents actions.'}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* TAB CONTENT */}
-
-                    {/* TAB: AGENTS */}
-                    {activeTab === 'agents' && (
-                        <>
-                            {loading ? (
-                                <div className="py-20 text-center">
-                                    <div className="w-10 h-10 border-2 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4"></div>
-                                    <p className="text-zinc-500 font-mono text-sm uppercase tracking-widest">Syncing...</p>
+                <div className="p-8 max-w-7xl mx-auto space-y-8">
+                    
+                    {/* 1. KPI GRID (The Funnel) */}
+                    <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        {MOCK_KPIS.map((kpi, idx) => (
+                            <div key={idx} className={`${THEME.panel} p-5 rounded-2xl flex items-start justify-between hover:border-zinc-700 transition-colors`}>
+                                <div>
+                                    <p className="text-zinc-500 text-xs font-medium uppercase tracking-wider mb-1">{kpi.label}</p>
+                                    <h3 className="text-2xl font-bold text-white">{kpi.value}</h3>
+                                    <span className="text-xs text-emerald-500 font-mono mt-1 block">{kpi.change} this week</span>
                                 </div>
-                            ) : agents.length > 0 ? (
-                                <div className="grid grid-cols-1 gap-4">
-                                    {agents.map((agent) => {
-                                        const isOnline = agent.last_seen && (new Date().getTime() - new Date(agent.last_seen).getTime() < 1000 * 60 * 5);
-                                        return (
-                                            <div key={agent.id} className={`p-6 rounded-2xl ${THEME.panel} flex flex-col gap-6 group hover:border-emerald-500/30 transition-all`}>
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-5">
-                                                        <div className={`w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center ${isOnline ? 'text-emerald-500 shadow-[0_0_15px_-3px_rgba(16,185,129,0.3)]' : 'text-zinc-600'} group-hover:scale-110 transition-transform`}>
-                                                            <Shield className="w-6 h-6" />
-                                                        </div>
-                                                        <div>
-                                                            <div className="flex items-center gap-2 mb-1">
-                                                                <h3 className="font-bold text-lg">{agent.name}</h3>
-                                                                {isOnline ? (
-                                                                    <span className="text-[10px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded-full font-mono uppercase flex items-center gap-1.5">
-                                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                                                        ONLINE
-                                                                    </span>
-                                                                ) : (
-                                                                    <span className="text-[10px] bg-zinc-800 text-zinc-500 border border-zinc-700 px-2 py-0.5 rounded-full font-mono uppercase">
-                                                                        OFFLINE
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <div className="flex items-center gap-3 text-xs text-zinc-500 font-mono">
-                                                                <span>ID: {agent.id.slice(0, 8)}</span>
-                                                                <span className="text-zinc-800">|</span>
-                                                                <span>Seen: {agent.last_seen ? new Date(agent.last_seen).toLocaleTimeString() : 'Never'}</span>
-                                                                <span className="text-zinc-800">|</span>
-                                                                <span className={agent.wallet_balance && agent.wallet_balance > 0 ? "text-emerald-400" : ""}>
-                                                                    {agent.wallet_balance ? `${agent.wallet_balance.toFixed(4)} ETH` : '0 ETH'}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                <div className={`p-3 rounded-xl bg-zinc-900/50 ${kpi.color}`}>
+                                    <kpi.icon className="w-5 h-5" />
+                                </div>
+                            </div>
+                        ))}
+                    </section>
+
+                    {/* 2. SPLIT VIEW: FLEET & STRATEGY */}
+                    <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        
+                        {/* LEFT: Agent Fleet Control */}
+                        <div className="lg:col-span-2 space-y-4">
+                            <div className="flex justify-between items-center">
+                                <h2 className="text-lg font-bold flex items-center gap-2">
+                                    <Users className="w-5 h-5 text-zinc-500" />
+                                    Active Fleet
+                                </h2>
+                                <button className="text-xs flex items-center gap-1 text-emerald-500 hover:text-emerald-400">
+                                    <RefreshCw className="w-3 h-3" /> Refresh
+                                </button>
+                            </div>
+
+                            <div className="grid gap-3">
+                                {/* Hunter Agent Card */}
+                                <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl p-4 flex items-center justify-between group hover:border-zinc-700 transition-all">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500">
+                                            <Target className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="font-bold text-sm">Hunter-01</h3>
+                                                <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded border border-emerald-500/20">SCRAPING</span>
                                             </div>
-                                        )
-                                    })}
-                                </div>
-                            ) : (
-                                <div className="border border-zinc-800 rounded-2xl p-16 text-center bg-zinc-950/30 border-dashed">
-                                    <h3 className="text-xl font-bold text-white mb-2">No active agents found</h3>
-                                    <p className="text-zinc-500 max-w-md mx-auto mb-8 leading-relaxed">
-                                        You don't have any functioning agents deployed yet.
-                                    </p>
-                                </div>
-                            )}
-                        </>
-                    )}
-
-                    {/* TAB: LOGS */}
-                    {activeTab === 'logs' && (
-                        <div className="bg-black border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
-                            <div className="px-6 py-4 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/50">
-                                <div className="flex items-center gap-3">
-                                    <Activity className="w-4 h-4 text-emerald-500" />
-                                    <span className="text-xs font-mono uppercase tracking-widest text-zinc-300">Live Agent Ledger</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                    <span className="text-[10px] font-mono text-emerald-500 uppercase">Real-time</span>
-                                </div>
-                            </div>
-
-                            <div className="p-0 max-h-[500px] overflow-y-auto font-mono text-[11px]">
-                                {ledger.length === 0 ? (
-                                    <div className="p-12 text-center text-zinc-600 italic">
-                                        Waiting for network activity...
+                                            <p className="text-xs text-zinc-500 font-mono mt-0.5">Target: {mission.niche}</p>
+                                        </div>
                                     </div>
-                                ) : (
-                                    <table className="w-full text-left border-collapse">
-                                        <thead className="sticky top-0 bg-zinc-900 text-zinc-500 uppercase text-[9px] tracking-tighter">
-                                            <tr>
-                                                <th className="px-6 py-3 font-normal border-b border-zinc-800">Timestamp</th>
-                                                <th className="px-6 py-3 font-normal border-b border-zinc-800">Agent</th>
-                                                <th className="px-6 py-3 font-normal border-b border-zinc-800">Action</th>
-                                                <th className="px-6 py-3 font-normal border-b border-zinc-800 text-right">Amount</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-zinc-900">
-                                            {ledger.map((tx) => (
-                                                <tr key={tx.id} className="hover:bg-zinc-900/50 transition-colors group">
-                                                    <td className="px-6 py-4 text-zinc-500 whitespace-nowrap">
-                                                        {new Date(tx.timestamp).toLocaleTimeString([], { hour12: false })}
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50"></div>
-                                                            <span className="text-zinc-300 truncate max-w-[120px]">{tx.from}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-zinc-400 italic">
-                                                        {tx.note}
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <span className={tx.amount > 0 ? 'text-emerald-400 font-bold' : 'text-zinc-500'}>
-                                                            {tx.amount > 0 ? `+${tx.amount.toFixed(4)}` : tx.amount.toFixed(4)}
-                                                        </span>
-                                                        <span className="text-[9px] text-zinc-600 ml-1">ETH</span>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                )}
+                                    <div className="flex items-center gap-2">
+                                        <button className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors" title="Pause">
+                                            <Square className="w-4 h-4 fill-current" />
+                                        </button>
+                                        <button className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors" title="Configure">
+                                            <Settings className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Emailer Agent Card */}
+                                <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl p-4 flex items-center justify-between group hover:border-zinc-700 transition-all">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-500">
+                                            <Mail className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="font-bold text-sm">Outbound-X</h3>
+                                                <span className="text-[10px] bg-zinc-800 text-zinc-500 px-1.5 py-0.5 rounded border border-zinc-700">IDLE</span>
+                                            </div>
+                                            <p className="text-xs text-zinc-500 font-mono mt-0.5">Queue: 0 pending</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button className="p-2 hover:bg-emerald-900/30 rounded-lg text-emerald-500 hover:text-emerald-400 transition-colors" title="Start">
+                                            <Play className="w-4 h-4 fill-current" />
+                                        </button>
+                                        <button className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors" title="Configure">
+                                            <Settings className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    )}
+
+                        {/* RIGHT: Strategy War Room */}
+                        <div className="lg:col-span-1">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-lg font-bold flex items-center gap-2">
+                                    <Activity className="w-5 h-5 text-zinc-500" />
+                                    Strategy
+                                </h2>
+                                <button 
+                                    onClick={() => setIsEditingStrategy(!isEditingStrategy)}
+                                    className="text-xs text-zinc-400 hover:text-white underline"
+                                >
+                                    {isEditingStrategy ? 'Cancel' : 'Edit'}
+                                </button>
+                            </div>
+
+                            <div className={`p-5 rounded-2xl ${THEME.panel} space-y-5 relative overflow-hidden`}>
+                                {isEditingStrategy && (
+                                    <div className="absolute top-0 right-0 p-2">
+                                        <button className="bg-emerald-500 text-black p-2 rounded-lg hover:bg-emerald-400 transition-colors">
+                                            <Save className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                )}
+
+                                <div>
+                                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider block mb-2">Target Niche</label>
+                                    {isEditingStrategy ? (
+                                        <input 
+                                            type="text" 
+                                            value={mission.niche}
+                                            onChange={(e) => setMission({...mission, niche: e.target.value})}
+                                            className="w-full bg-black border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                                        />
+                                    ) : (
+                                        <div className="text-sm font-medium text-white border-l-2 border-blue-500 pl-3">
+                                            {mission.niche}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider block mb-2">Current Hook (Subject)</label>
+                                    {isEditingStrategy ? (
+                                        <input 
+                                            type="text" 
+                                            value={mission.emailSubject}
+                                            onChange={(e) => setMission({...mission, emailSubject: e.target.value})}
+                                            className="w-full bg-black border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                                        />
+                                    ) : (
+                                        <div className="text-sm font-medium text-white border-l-2 border-purple-500 pl-3 italic">
+                                            "{mission.emailSubject}"
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="pt-2 border-t border-zinc-800">
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-zinc-500">Conversion Rate</span>
+                                        <span className="font-mono text-emerald-500">2.4%</span>
+                                    </div>
+                                    <div className="w-full bg-zinc-900 h-1.5 rounded-full mt-2 overflow-hidden">
+                                        <div className="bg-emerald-500 h-full w-[2.4%]"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* 3. ACTIVITY LOG (Reduced) */}
+                    <section>
+                        <h2 className="text-sm font-bold text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            Recent Signals
+                            <span className="w-full h-px bg-zinc-900"></span>
+                        </h2>
+                        <div className="bg-black border border-zinc-800 rounded-xl overflow-hidden">
+                            <table className="w-full text-left">
+                                <tbody className="divide-y divide-zinc-900">
+                                    {ledger.slice(0, 5).map((tx) => (
+                                        <tr key={tx.id} className="hover:bg-zinc-900/50 transition-colors text-xs group">
+                                            <td className="px-4 py-3 text-zinc-500 font-mono w-32">
+                                                {new Date(tx.timestamp).toLocaleTimeString([], { hour12: false })}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span className="font-bold text-zinc-300">{tx.from}</span>
+                                            </td>
+                                            <td className="px-4 py-3 text-zinc-400">
+                                                {tx.note}
+                                            </td>
+                                            <td className="px-4 py-3 text-right font-mono text-zinc-500 group-hover:text-emerald-500">
+                                                {tx.amount > 0 && '+'}{tx.amount.toFixed(4)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {ledger.length === 0 && (
+                                        <tr>
+                                            <td colSpan={4} className="px-4 py-8 text-center text-zinc-600 italic">
+                                                No signals detected in the ether...
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
                 </div>
-            </main >
-        </div >
+            </main>
+        </div>
     )
 }
