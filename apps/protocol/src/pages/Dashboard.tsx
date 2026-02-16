@@ -3,10 +3,11 @@ import { Helmet } from 'react-helmet-async'
 import { 
     Users, Activity, LogOut, Wallet, Globe, 
     Play, Square, Settings, Target, Mail, 
-    MessageSquare, DollarSign,
+    MessageSquare, DollarSign, Megaphone,
     Save, RefreshCw
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useVeritasState } from '../hooks/useVeritasState'
 
@@ -70,6 +71,9 @@ export function DashboardPage() {
                     <button className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                         <Activity className="w-5 h-5" />
                     </button>
+                    <Link to="/broadcast" className="p-3 rounded-xl text-zinc-500 hover:bg-zinc-900 hover:text-purple-500 transition-colors flex justify-center" title="Broadcast Hub">
+                        <Megaphone className="w-5 h-5" />
+                    </Link>
                     <button className="p-3 rounded-xl text-zinc-500 hover:bg-zinc-900 transition-colors">
                         <Users className="w-5 h-5" />
                     </button>

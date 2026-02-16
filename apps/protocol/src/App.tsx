@@ -3,6 +3,7 @@ import { HelmetProvider } from 'react-helmet-async'
 import { SEOHead } from './components/SEOHead'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { LoginPage } from './pages/Login'
+import { BroadcastPage } from './pages/BroadcastPage'
 import { DashboardPage } from './pages/Dashboard'
 import { AdminDashboardPage } from './pages/AdminDashboard'
 import { useAuth } from './contexts/AuthContext'
@@ -91,6 +92,16 @@ function App() {
                             element={
                                 <ProtectedRoute>
                                     <DashboardPage />
+                                </ProtectedRoute>
+                            }
+                        />
+
+                        {/* BROADCAST HUB (MARKETING) */}
+                        <Route
+                            path="/broadcast"
+                            element={
+                                <ProtectedRoute>
+                                    <BroadcastPage />
                                 </ProtectedRoute>
                             }
                         />
