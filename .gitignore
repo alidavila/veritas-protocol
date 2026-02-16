@@ -33,3 +33,4 @@ yarn-error.log*
 wallet.json
 *.pem
 private_key.txt
+.vercel

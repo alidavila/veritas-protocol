@@ -6,6 +6,7 @@
 
 ### 🚀 Active Applications (`/apps`)
 - **`protocol/`** (Frontend + Scripts) — The core DApp & Dashboard.
+- **`landing/`** (HTML/JS) — Marketing Landing Page.
 - **`cli/`** (Node.js) — Developer CLI tools.
 - **`ghost-auditor/`** (Security) — Attack & Audit tool.
 
