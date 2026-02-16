@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "buildCommand": "cd apps/protocol && npm install && npm run build",
+  "outputDirectory": "apps/protocol/dist",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/apps/protocol/$1" }
+  ]
+}
