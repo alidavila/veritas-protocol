@@ -3,12 +3,11 @@ import { Helmet } from 'react-helmet-async'
 import { 
     Users, Activity, LogOut, Wallet, Globe, 
     Play, Square, Settings, Target, Mail, 
-    MessageSquare, DollarSign, ChevronRight,
+    MessageSquare, DollarSign,
     Save, RefreshCw
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { agentsService, Agent } from '../lib/agents'
 import { useVeritasState } from '../hooks/useVeritasState'
 
 const THEME = {
@@ -31,8 +30,6 @@ const MOCK_KPIS = [
 export function DashboardPage() {
     const { signOut } = useAuth()
     const { ledger, treasury } = useVeritasState()
-    const [agents, setAgents] = useState<Agent[]>([])
-    const [loading, setLoading] = useState(true)
     
     // Mission Control State (Local for now, should sync to Supabase)
     const [mission, setMission] = useState({
@@ -43,20 +40,8 @@ export function DashboardPage() {
     const [isEditingStrategy, setIsEditingStrategy] = useState(false)
 
     useEffect(() => {
-        fetchInitialData()
+        // Placeholder for future data fetching
     }, [])
-
-    const fetchInitialData = async () => {
-        try {
-            setLoading(true)
-            const agentsData = await agentsService.getAgents()
-            setAgents(agentsData)
-        } catch (error) {
-            console.error("Error fetching data:", error)
-        } finally {
-            setLoading(false)
-        }
-    }
 
     const handleLogout = async () => {
         try {
@@ -65,11 +50,6 @@ export function DashboardPage() {
         } catch (error) {
             console.error("Error signing out:", error)
         }
-    }
-
-    const toggleAgent = (agentId: string, currentStatus: boolean) => {
-        // Logic to stop/start agent via Supabase would go here
-        console.log(`Toggling agent ${agentId} to ${!currentStatus}`)
     }
 
     return (
