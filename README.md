@@ -1,48 +1,25 @@
+# 🦞 Veritas (Monorepo)
 
-# 🏛️ Veritas Protocol (Monorepo)
+**"The VISA for AIs"** — Identity & Financial Infrastructure for AI Agents.
 
-This repository contains the entire ecosystem of the Veritas Agentic Protocol.
+## 📂 Structure
 
-## 📂 Project Structure
+### 🚀 Active Applications (`/apps`)
+- **`protocol/`** (Frontend + Scripts) — The core DApp & Dashboard.
+- **`cli/`** (Node.js) — Developer CLI tools.
+- **`ghost-auditor/`** (Security) — Attack & Audit tool.
 
-### 1. `protocolo-veritas/` (The Core)
+### 📚 Documentation (`/documentation`)
+- `PROJECT_MAP.md` — Full Architecture overview.
+- `WORKFLOW.md` — Original operational workflows.
 
-**Status**: 🟢 Production
-The main Protocol implementation. Contains:
+### 📦 Archive (`/archive`)
+- Legacy code (Landing, WP Plugin, Core) kept for reference.
 
-- **Frontend**: React Dashboard (`/dashboard`, `/admin`).
-- **Backend Agents**: The "Army" (`router`, `treasurer`, `hunter`).
-- **Infrastructure**: Supabase Types, Vercel Config.
+## 🛠️ Setup
 
-### 2. `veritas-cli/`
+1. **Install Dependencies:**
+   Run `npm install` in the root (if using workspaces) or in each app folder.
 
-**Status**: 🟡 Beta
-Command Line Interface for developers to register Identities and run local audits.
-
-### 3. `veritas-ghost-auditor/`
-
-**Status**: 🔵 Experimental
-Standalone Puppeteer script for deep web analysis.
-
----
-
-## 🚀 Deployment
-
-### Frontend (Vercel)
-
-The Dashboard lives in `protocolo-veritas`.
-
-- **Root Directory**: `protocolo-veritas`
-- **Build Command**: `npm run build`
-- **Output Directory**: `dist`
-
-### Backend (Local/VPS)
-
-The Agents run via PM2 found in `protocolo-veritas/ecosystem.config.cjs`.
-
----
-
-## 🔐 Security
-
-- Private keys (`.treasurer-wallet.json`) are **gitignored**.
-- API Keys are managed via `.env`.
+2. **Environment:**
+   Check `.env.example` in each app.

@@ -27,6 +27,23 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     return children
 }
 
+const AdminRoute = ({ children }: { children: JSX.Element }) => {
+    const { user, loading } = useAuth()
+    const adminEmail = import.meta.env.VITE_ADMIN_EMAIL
+
+    if (loading) return <LoadingFallback />
+
+    // 1. Must be logged in
+    if (!user) return <Navigate to="/login" replace />
+
+    // 2. Must be the Admin
+    if (user.email !== adminEmail) {
+        return <Navigate to="/dashboard" replace />
+    }
+
+    return children
+}
+
 function App() {
     // --- CRITICAL CONFIG CHECK ---
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -82,9 +99,9 @@ function App() {
                         <Route
                             path="/admin"
                             element={
-                                <ProtectedRoute>
+                                <AdminRoute>
                                     <AdminDashboardPage />
-                                </ProtectedRoute>
+                                </AdminRoute>
                             }
                         />
 

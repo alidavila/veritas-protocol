@@ -15,7 +15,9 @@ export function LoginPage() {
 
     // Redirect if already logged in
     if (user) {
-        navigate('/dashboard')
+        const adminEmail = import.meta.env.VITE_ADMIN_EMAIL
+        const isAdmin = user.email === adminEmail
+        navigate(isAdmin ? '/admin' : '/dashboard')
         return null
     }
 
