@@ -1,10 +1,9 @@
 import { Helmet } from 'react-helmet-async'
 import {
     LayoutGrid, Video, FileText, Share2, Plus,
-    Calendar, CheckCircle2, Clock, MoreVertical,
+    CheckCircle2, Clock, MoreVertical,
     Youtube, Linkedin, Mic, Sparkles
 } from 'lucide-react'
-import { useState } from 'react'
 
 const THEME = {
     bg: 'bg-black',
@@ -14,24 +13,7 @@ const THEME = {
     border: 'border-zinc-800'
 }
 
-type ContentItem = {
-    id: string
-    title: string
-    status: 'IDEA' | 'SCRIPTING' | 'RECORDING' | 'EDITING' | 'PUBLISHED'
-    format: 'VIDEO' | 'POST' | 'THREAD'
-    channels: ('YOUTUBE' | 'LINKEDIN')[]
-    date?: string
-}
-
-const MOCK_CONTENT: ContentItem[] = [
-    { id: '1', title: 'Genesis: Creating the First AI Wallet', status: 'SCRIPTING', format: 'VIDEO', channels: ['YOUTUBE', 'LINKEDIN'], date: 'Feb 17' },
-    { id: '2', title: 'Why AI Agents Need Bank Accounts', status: 'IDEA', format: 'POST', channels: ['LINKEDIN'] },
-    { id: '3', title: 'How I Built a CEO Dashboard in 2 Hours', status: 'PUBLISHED', format: 'VIDEO', channels: ['YOUTUBE'], date: 'Feb 14' },
-]
-
 export function BroadcastPage() {
-    const [view, setView] = useState<'KANBAN' | 'LIST'>('KANBAN')
-
     return (
         <div className={`min-h-screen ${THEME.bg} text-white font-sans flex`}>
             <Helmet>
