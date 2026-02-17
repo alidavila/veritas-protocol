@@ -4,12 +4,13 @@ import {
     Users, Activity, LogOut, Wallet, Globe, 
     Play, Square, Settings, Target, Mail, 
     MessageSquare, DollarSign, Megaphone,
-    Save, RefreshCw
+    Save, RefreshCw, PlusCircle
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useVeritasState } from '../hooks/useVeritasState'
+import { agentsService, Agent } from '../lib/agents'
 
 const THEME = {
     bg: 'bg-black',
@@ -137,59 +138,77 @@ export function DashboardPage() {
                                     <Users className="w-5 h-5 text-zinc-500" />
                                     Active Fleet
                                 </h2>
-                                <button className="text-xs flex items-center gap-1 text-emerald-500 hover:text-emerald-400">
-                                    <RefreshCw className="w-3 h-3" /> Refresh
+                                <button 
+                                    onClick={fetchAgents}
+                                    className="text-xs flex items-center gap-1 text-emerald-500 hover:text-emerald-400"
+                                >
+                                    <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} /> Refresh
                                 </button>
                             </div>
 
                             <div className="grid gap-3">
-                                {/* Hunter Agent Card */}
-                                <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl p-4 flex items-center justify-between group hover:border-zinc-700 transition-all">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500">
-                                            <Target className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <h3 className="font-bold text-sm">Hunter-01</h3>
-                                                <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded border border-emerald-500/20">SCRAPING</span>
+                                {loading && agents.length === 0 ? (
+                                    <div className="p-8 text-center text-zinc-500 border border-zinc-800 rounded-xl bg-zinc-900/20">
+                                        Loading fleet status...
+                                    </div>
+                                ) : agents.length === 0 ? (
+                                    <div className="p-8 text-center border border-dashed border-zinc-800 rounded-xl bg-zinc-900/10">
+                                        <p className="text-zinc-400 mb-4">No agents deployed.</p>
+                                        <button 
+                                            onClick={deployDefaultFleet}
+                                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-bold flex items-center gap-2 mx-auto"
+                                        >
+                                            <PlusCircle className="w-4 h-4" /> Deploy Genesis Fleet
+                                        </button>
+                                    </div>
+                                ) : (
+                                    agents.map(agent => (
+                                        <div key={agent.id} className={`bg-zinc-900/40 border ${agent.status === 'active' ? 'border-emerald-500/30' : 'border-zinc-800'} rounded-xl p-4 flex items-center justify-between group hover:border-zinc-700 transition-all`}>
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                                                    agent.type === 'scraper' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : 
+                                                    agent.type === 'sales' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20' :
+                                                    'bg-zinc-800 text-zinc-400'
+                                                } border`}>
+                                                    {agent.type === 'scraper' ? <Target className="w-5 h-5" /> : 
+                                                     agent.type === 'sales' ? <Mail className="w-5 h-5" /> : 
+                                                     <Settings className="w-5 h-5" />}
+                                                </div>
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <h3 className="font-bold text-sm">{agent.name}</h3>
+                                                        <span className={`text-[10px] px-1.5 py-0.5 rounded border uppercase ${
+                                                            agent.status === 'active' 
+                                                                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
+                                                                : 'bg-zinc-800 text-zinc-500 border-zinc-700'
+                                                        }`}>
+                                                            {agent.status}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-zinc-500 font-mono mt-0.5">
+                                                        {agent.description || agent.type.toUpperCase()}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <p className="text-xs text-zinc-500 font-mono mt-0.5">Target: {mission.niche}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <button className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors" title="Pause">
-                                            <Square className="w-4 h-4 fill-current" />
-                                        </button>
-                                        <button className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors" title="Configure">
-                                            <Settings className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Emailer Agent Card */}
-                                <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl p-4 flex items-center justify-between group hover:border-zinc-700 transition-all">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-500">
-                                            <Mail className="w-5 h-5" />
-                                        </div>
-                                        <div>
                                             <div className="flex items-center gap-2">
-                                                <h3 className="font-bold text-sm">Outbound-X</h3>
-                                                <span className="text-[10px] bg-zinc-800 text-zinc-500 px-1.5 py-0.5 rounded border border-zinc-700">IDLE</span>
+                                                <button 
+                                                    onClick={() => toggleAgent(agent)}
+                                                    className={`p-2 rounded-lg transition-colors ${
+                                                        agent.status === 'active' 
+                                                            ? 'text-emerald-500 hover:bg-emerald-900/30' 
+                                                            : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+                                                    }`} 
+                                                    title={agent.status === 'active' ? "Pause Agent" : "Start Agent"}
+                                                >
+                                                    {agent.status === 'active' ? <Square className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
+                                                </button>
+                                                <button className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors" title="Configure">
+                                                    <Settings className="w-4 h-4" />
+                                                </button>
                                             </div>
-                                            <p className="text-xs text-zinc-500 font-mono mt-0.5">Queue: 0 pending</p>
                                         </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <button className="p-2 hover:bg-emerald-900/30 rounded-lg text-emerald-500 hover:text-emerald-400 transition-colors" title="Start">
-                                            <Play className="w-4 h-4 fill-current" />
-                                        </button>
-                                        <button className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors" title="Configure">
-                                            <Settings className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </div>
+                                    ))
+                                )}
                             </div>
                         </div>
 
