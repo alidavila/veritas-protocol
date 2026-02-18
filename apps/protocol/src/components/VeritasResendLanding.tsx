@@ -1,7 +1,8 @@
+const DashboardAssistant = lazy(() => import('./DashboardAssistant').then(m => ({ default: m.DashboardAssistant })))
 
 import { motion } from 'framer-motion'
-import { ArrowRight, Check, Code2, Lock, Shield, Terminal, Zap, Wallet, Fingerprint } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { ArrowRight, Check, Code2, Lock, Shield, Terminal, Zap, Wallet, Fingerprint, Copy } from 'lucide-react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
@@ -14,6 +15,8 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export function VeritasResendLanding() {
+    const [showChat, setShowChat] = useState(false)
+
     return (
         <div className="min-h-screen bg-black text-white selection:bg-emerald-500/30 selection:text-emerald-200 font-sans overflow-x-hidden">
             <Navbar />
@@ -24,7 +27,16 @@ export function VeritasResendLanding() {
             <EconomySection />
             <FaqSection />
             <CtaSection />
-            <FloatingSupport />
+            
+            {/* Chat Trigger & Overlay */}
+            <FloatingSupport onClick={() => setShowChat(!showChat)} isOpen={showChat} />
+            {showChat && (
+                <div className="fixed bottom-24 right-8 z-40 w-96 h-[500px] bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300">
+                    <Suspense fallback={<div className="flex h-full items-center justify-center text-emerald-500">Loading AI...</div>}>
+                        <DashboardAssistant />
+                    </Suspense>
+                </div>
+            )}
         </div>
     )
 }
@@ -81,6 +93,14 @@ function Navbar() {
 }
 
 function HeroSection() {
+    const [copied, setCopied] = useState(false)
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText('npm install @veritas/sdk')
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+    }
+
     return (
         <section className="pt-40 pb-20 px-6 relative">
             {/* Background Effects */}
@@ -130,12 +150,15 @@ function HeroSection() {
                     transition={{ duration: 0.5, delay: 0.5 }}
                     className="flex flex-col sm:flex-row items-center justify-center gap-4"
                 >
-                    <Link to="/login" className="h-14 px-8 rounded-full bg-white text-black font-bold text-base flex items-center gap-2 hover:bg-emerald-50 transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.3)]">
+                    <Link to="/dashboard?action=create_id" className="h-14 px-8 rounded-full bg-white text-black font-bold text-base flex items-center gap-2 hover:bg-emerald-50 transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.3)]">
                         Crear Identidad Agente
                         <ArrowRight className="w-5 h-5" />
                     </Link>
-                    <button className="h-14 px-8 rounded-full border border-white/10 bg-white/5 text-white font-semibold text-base hover:bg-white/10 transition-all backdrop-blur-sm flex items-center gap-2">
-                        <Terminal className="w-5 h-5 text-zinc-400" />
+                    <button 
+                        onClick={handleCopy}
+                        className="h-14 px-8 rounded-full border border-white/10 bg-white/5 text-white font-semibold text-base hover:bg-white/10 transition-all backdrop-blur-sm flex items-center gap-2"
+                    >
+                        {copied ? <Check className="w-5 h-5 text-emerald-500" /> : <Terminal className="w-5 h-5 text-zinc-400" />}
                         <code>npm install @veritas/sdk</code>
                     </button>
                 </motion.div>
