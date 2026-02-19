@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { ArrowRight, Check, Code2, Lock, Shield, Terminal, Zap, Wallet, Fingerprint, Copy } from 'lucide-react'
+import { ArrowRight, Check, Code2, Lock, Shield, Terminal, Zap, Wallet, Fingerprint } from 'lucide-react'
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import { clsx, type ClassValue } from 'clsx'
