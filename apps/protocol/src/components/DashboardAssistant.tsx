@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Mic, Send, X, MessageCircle, Volume2 } from 'lucide-react'
+import { Mic, Send, MessageCircle } from 'lucide-react'
 import { askAssistant } from '../lib/gemini'
 
 interface Message {
@@ -33,7 +33,6 @@ export function DashboardAssistant({
     const [input, setInput] = useState('')
     const [isRecording, setIsRecording] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
-    const [isSpeaking, setIsSpeaking] = useState(false)
 
     const recognitionRef = useRef<any>(null)
     const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -103,8 +102,8 @@ export function DashboardAssistant({
         if ('speechSynthesis' in window) {
             const utterance = new SpeechSynthesisUtterance(text)
             utterance.lang = lang === 'es' ? 'es-ES' : 'en-US'
-            utterance.onstart = () => setIsSpeaking(true)
-            utterance.onend = () => setIsSpeaking(false)
+            utterance.onstart = () => { /* Speaking started */ }
+            utterance.onend = () => { /* Speaking ended */ }
             window.speechSynthesis.speak(utterance)
         }
     }
@@ -141,7 +140,6 @@ export function DashboardAssistant({
     const bg = isDark ? 'bg-zinc-900' : 'bg-white'
     const border = isDark ? 'border-emerald-900/30' : 'border-zinc-200'
     const textMain = isDark ? 'text-zinc-200' : 'text-zinc-800'
-    const textSub = isDark ? 'text-zinc-500' : 'text-zinc-600'
     const userBubble = isDark ? 'bg-emerald-900/30 text-emerald-100' : 'bg-emerald-100 text-emerald-900'
     const assistantBubble = isDark ? 'bg-zinc-800 text-zinc-200' : 'bg-zinc-100 text-zinc-800'
 

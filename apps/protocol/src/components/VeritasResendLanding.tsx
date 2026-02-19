@@ -1,7 +1,7 @@
 const DashboardAssistant = lazy(() => import('./DashboardAssistant').then(m => ({ default: m.DashboardAssistant })))
 
 import { motion } from 'framer-motion'
-import { ArrowRight, Check, Code2, Lock, Shield, Terminal, Zap, Wallet, Fingerprint, Copy } from 'lucide-react'
+import { ArrowRight, Check, Code2, Lock, Shield, Terminal, Zap, Wallet, Fingerprint } from 'lucide-react'
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import { clsx, type ClassValue } from 'clsx'
@@ -9,10 +9,39 @@ import { twMerge } from 'tailwind-merge'
 
 import { ServiceMarketplace } from './ServiceMarketplace'
 
-// Utility for clean classes
-function cn(...inputs: ClassValue[]) {
-    return twMerge(clsx(inputs))
+// ... (imports)
+
+// FloatingSupport Component with Props
+function FloatingSupport({ onClick, isOpen }: { onClick: () => void, isOpen: boolean }) {
+    return (
+        <motion.button
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            whileHover={{ scale: 1.1 }}
+            onClick={onClick}
+            className="fixed bottom-8 right-8 w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)] z-50 text-black overflow-hidden group"
+        >
+            {isOpen ? (
+                <span className="font-bold text-xl">✕</span>
+            ) : (
+                <>
+                    <div className="absolute inset-0 bg-white/20 blur-sm rounded-full" />
+                    <motion.div
+                        animate={{ rotate: [0, 10, -10, 0] }}
+                        transition={{ repeat: Infinity, duration: 5, repeatDelay: 2 }}
+                    >
+                        <div className="relative">
+                            <div className="w-3 h-3 bg-red-500 rounded-full absolute -top-1 -right-1 border-2 border-emerald-500" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        </div>
+                    </motion.div>
+                </>
+            )}
+        </motion.button>
+    )
 }
+
+// ... (rest of the file)
 
 export function VeritasResendLanding() {
     const [showChat, setShowChat] = useState(false)
@@ -498,24 +527,31 @@ function FaqSection() {
     )
 }
 
-function FloatingSupport() {
+function FloatingSupport({ onClick, isOpen }: { onClick: () => void, isOpen: boolean }) {
     return (
         <motion.button
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             whileHover={{ scale: 1.1 }}
+            onClick={onClick}
             className="fixed bottom-8 right-8 w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)] z-50 text-black overflow-hidden group"
         >
-            <div className="absolute inset-0 bg-white/20 blur-sm rounded-full" />
-            <motion.div
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ repeat: Infinity, duration: 5, repeatDelay: 2 }}
-            >
-                <div className="relative">
-                    <div className="w-3 h-3 bg-red-500 rounded-full absolute -top-1 -right-1 border-2 border-emerald-500" />
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                </div>
-            </motion.div>
+            {isOpen ? (
+                <span className="font-bold text-xl">✕</span>
+            ) : (
+                <>
+                    <div className="absolute inset-0 bg-white/20 blur-sm rounded-full" />
+                    <motion.div
+                        animate={{ rotate: [0, 10, -10, 0] }}
+                        transition={{ repeat: Infinity, duration: 5, repeatDelay: 2 }}
+                    >
+                        <div className="relative">
+                            <div className="w-3 h-3 bg-red-500 rounded-full absolute -top-1 -right-1 border-2 border-emerald-500" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        </div>
+                    </motion.div>
+                </>
+            )}
         </motion.button>
     )
 }
