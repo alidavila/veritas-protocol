@@ -32,6 +32,53 @@ const MOCK_KPIS = [
 export function DashboardPage() {
     const { signOut } = useAuth()
     const { ledger, treasury } = useVeritasState()
+    const [agents, setAgents] = useState<Agent[]>([])
+    const [loading, setLoading] = useState(true)
+
+    const fetchAgents = async () => {
+        setLoading(true)
+        try {
+            const data = await agentsService.getAgents()
+            setAgents(data)
+        } catch (error) {
+            console.error("Error fetching agents:", error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const toggleAgent = async (agent: Agent) => {
+        const newStatus = agent.status === 'active' ? 'paused' : 'active'
+        await agentsService.updateAgentStatus(agent.id, newStatus)
+        setAgents(agents.map(a => a.id === agent.id ? { ...a, status: newStatus } : a))
+    }
+
+    const deployDefaultFleet = async () => {
+        setLoading(true)
+        try {
+            await agentsService.createAgent({
+                name: 'Scout-Alpha',
+                type: 'scraper',
+                status: 'active',
+                config: { target: 'LinkedIn', interval: 300 }
+            })
+            await agentsService.createAgent({
+                name: 'Closer-Beta',
+                type: 'sales',
+                status: 'paused',
+                config: { template: 'Cold Outreach V1', max_daily: 50 }
+            })
+            await fetchAgents()
+        } catch (error) {
+            console.error("Error deploying default fleet:", error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        fetchAgents()
+    }, [])
     
     // Mission Control State (Local for now, should sync to Supabase)
     const [mission, setMission] = useState({
@@ -40,10 +87,6 @@ export function DashboardPage() {
         status: "ACTIVE"
     })
     const [isEditingStrategy, setIsEditingStrategy] = useState(false)
-
-    useEffect(() => {
-        // Placeholder for future data fetching
-    }, [])
 
     const handleLogout = async () => {
         try {

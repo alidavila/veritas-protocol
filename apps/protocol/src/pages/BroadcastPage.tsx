@@ -1,8 +1,8 @@
 import { Helmet } from 'react-helmet-async'
 import {
     LayoutGrid, Video, FileText, Share2, Plus,
-    CheckCircle2, Clock, MoreVertical,
-    Youtube, Linkedin, Mic, Sparkles, X, Save
+    CheckCircle2,
+    Youtube, Linkedin, Sparkles, X, Save
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
