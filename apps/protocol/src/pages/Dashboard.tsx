@@ -1,3 +1,4 @@
+import { supabase } from '../lib/supabase'
 
 import { Helmet } from 'react-helmet-async'
 import { 
@@ -21,19 +22,40 @@ const THEME = {
     border: 'border-zinc-800'
 }
 
-// Mock KPIs for visualization (until we connect real analytics)
-const MOCK_KPIS = [
-    { label: 'Leads Scraped', value: '1,240', change: '+12%', icon: Target, color: 'text-blue-500' },
-    { label: 'Emails Sent', value: '856', change: '+5%', icon: Mail, color: 'text-purple-500' },
-    { label: 'Engaged', value: '42', change: '+18%', icon: MessageSquare, color: 'text-orange-500' },
-    { label: 'Revenue', value: '$0.00', change: '0%', icon: DollarSign, color: 'text-emerald-500' },
-]
-
 export function DashboardPage() {
     const { signOut } = useAuth()
     const { ledger, treasury } = useVeritasState()
     const [agents, setAgents] = useState<Agent[]>([])
     const [loading, setLoading] = useState(true)
+    const [stats, setStats] = useState({ leads: 0, emails: 0, engaged: 0 })
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const [leads, emails, engaged] = await Promise.all([
+                    supabase.from('agent_ledger').select('*', { count: 'exact', head: true }).eq('action', 'LEAD_FOUND'),
+                    supabase.from('agent_ledger').select('*', { count: 'exact', head: true }).eq('action', 'EMAIL_SENT'),
+                    supabase.from('agent_ledger').select('*', { count: 'exact', head: true }).eq('action', 'REPLY_RECEIVED')
+                ])
+                
+                setStats({
+                    leads: leads.count || 0,
+                    emails: emails.count || 0,
+                    engaged: engaged.count || 0
+                })
+            } catch (e) {
+                console.error("Error fetching stats:", e)
+            }
+        }
+        fetchStats()
+    }, [])
+
+    const KPIS = [
+        { label: 'Leads Scraped', value: stats.leads.toLocaleString(), change: 'Live', icon: Target, color: 'text-blue-500' },
+        { label: 'Emails Sent', value: stats.emails.toLocaleString(), change: 'Live', icon: Mail, color: 'text-purple-500' },
+        { label: 'Engaged', value: stats.engaged.toLocaleString(), change: 'Live', icon: MessageSquare, color: 'text-orange-500' },
+        { label: 'Treasury', value: `${treasury.toFixed(4)} ETH`, change: 'On-Chain', icon: DollarSign, color: 'text-emerald-500' },
+    ]
 
     const fetchAgents = async () => {
         setLoading(true)
@@ -157,7 +179,7 @@ export function DashboardPage() {
                     
                     {/* 1. KPI GRID (The Funnel) */}
                     <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        {MOCK_KPIS.map((kpi, idx) => (
+                        {KPIS.map((kpi, idx) => (
                             <div key={idx} className={`${THEME.panel} p-5 rounded-2xl flex items-start justify-between hover:border-zinc-700 transition-colors`}>
                                 <div>
                                     <p className="text-zinc-500 text-xs font-medium uppercase tracking-wider mb-1">{kpi.label}</p>
