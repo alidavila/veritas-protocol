@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Mic, Send, X, MessageCircle, Volume2 } from 'lucide-react'
-import { askAssistant } from '../lib/claude'
+import { askAssistant } from '../lib/gemini'
 
 interface Message {
     role: 'user' | 'assistant'
@@ -28,7 +28,7 @@ export function DashboardAssistant({
     lang = 'es', 
     isDark = true 
 }: Props) {
-    const [isOpen, setIsOpen] = useState(false)
+    // Internal state for chat visibility/messages
     const [messages, setMessages] = useState<Message[]>([])
     const [input, setInput] = useState('')
     const [isRecording, setIsRecording] = useState(false)
@@ -77,15 +77,16 @@ export function DashboardAssistant({
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, [messages])
 
+    // Welcome message
     useEffect(() => {
-        if (isOpen && messages.length === 0) {
+        if (messages.length === 0) {
             setMessages([{
                 role: 'assistant',
                 content: t.welcome,
                 timestamp: new Date()
             }])
         }
-    }, [isOpen])
+    }, [])
 
     const toggleRecording = () => {
         if (!recognitionRef.current) return
@@ -149,7 +150,7 @@ export function DashboardAssistant({
             <div className={`flex items-center justify-between p-4 border-b ${border}`}>
                 <div className="flex items-center gap-2">
                     <MessageCircle className={`w-5 h-5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                    <span className={`font-bold ${textMain}`}>CEO Assistant (Claude)</span>
+                    <span className={`font-bold ${textMain}`}>CEO Assistant (Gemini)</span>
                 </div>
             </div>
 
