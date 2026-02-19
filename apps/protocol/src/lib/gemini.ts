@@ -38,7 +38,7 @@ export async function askAssistant(question: string, context: AssistantContext, 
         console.warn('Logic file not found')
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
     const systemPrompt = lang === 'es' ? `
 Eres el Asistente Virtual del CEO de VERITAS CORP, una empresa de agentes autónomos de IA.
