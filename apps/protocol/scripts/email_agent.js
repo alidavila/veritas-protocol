@@ -87,7 +87,7 @@ async function runHunterLoop() {
         let body = `Hello team at ${domain}...`;
 
         if (genAI) {
-            const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+            const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
             const prompt = `
             CONTEXT:
             ${BUSINESS_LOGIC.slice(0, 2000)}... 

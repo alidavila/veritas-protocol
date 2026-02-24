@@ -94,6 +94,7 @@ export const agentsService = {
     },
 
     async updateAgentStatus(id: string, status: 'active' | 'paused' | 'error') {
+        // 1. Update the agents table (UI state)
         const { data, error } = await supabase
             .from('agents')
             .update({ status })
@@ -102,6 +103,22 @@ export const agentsService = {
             .single()
 
         if (error) throw error
+
+        // 2. Sync with agent_control (what backend scripts actually read)
+        const systemStatus = status === 'active' ? 'running' : 'stopped'
+        await supabase
+            .from('agent_control')
+            .upsert({ id: 1, status: systemStatus, updated_at: new Date().toISOString() })
+
+        // 3. Send command to agent_commands (real-time signal)
+        await supabase
+            .from('agent_commands')
+            .insert([{
+                command: status === 'active' ? 'RESUME' : 'PAUSE',
+                agent_id: id,
+                status: 'pending'
+            }])
+
         return data as Agent
     },
 
@@ -175,5 +192,25 @@ export const agentsService = {
                 status: 'pending'
             }]);
         if (error) throw error;
+    },
+
+    async saveStrategy(strategy: { niche: string; emailSubject: string; status: string }) {
+        const { error } = await supabase
+            .from('agent_control')
+            .upsert({
+                id: 1,
+                config: strategy,
+                updated_at: new Date().toISOString()
+            })
+        if (error) throw error;
+    },
+
+    async getStrategy(): Promise<{ niche: string; emailSubject: string; status: string } | null> {
+        const { data } = await supabase
+            .from('agent_control')
+            .select('config')
+            .eq('id', 1)
+            .single()
+        return data?.config || null
     }
 }
