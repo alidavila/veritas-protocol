@@ -15,11 +15,11 @@ dotenv.config();
 // --- CONFIGURATION ---
 import { GoogleGenerativeAI } from '@google/generative-ai';
 const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY);
-const embeddingModel = genAI.getGenerativeModel({ model: "embedding-001" });
-const textModel = genAI.getGenerativeModel({ model: "gemini-pro" });
+const embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
+const textModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 const apiKeyName = process.env.CDP_API_KEY_NAME;
-const privateKey = process.env.CDP_API_KEY_PRIVATE_KEY?.replace(/\\n/g, '\n');
+const privateKey = process.env.CDP_API_KEY_PRIVATE?.replace(/\\n/g, '\n');
 
 if (apiKeyName && privateKey) {
     Coinbase.configure({ apiKeyName, privateKey });
