@@ -106,14 +106,37 @@ ${businessLogic}
 Answer the CEO's question clearly and actionably.
 `
 
-    try {
-        const result = await model.generateContent(`${systemPrompt}\n\nPregunta del CEO: ${question}`)
-        const response = await result.response
-        return response.text()
-    } catch (error: any) {
-        console.error('Gemini API error:', error)
-        return lang === 'es'
-            ? `Error al conectar con el asistente: ${error.message}`
-            : `Error connecting to assistant: ${error.message}`
+    const MAX_RETRIES = 2
+    const RETRY_DELAY_MS = 5000
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            const result = await model.generateContent(`${systemPrompt}\n\nPregunta del CEO: ${question}`)
+            const response = await result.response
+            return response.text()
+        } catch (error: any) {
+            const is429 = error?.message?.includes('429') || error?.message?.includes('quota')
+
+            if (is429 && attempt < MAX_RETRIES) {
+                const wait = RETRY_DELAY_MS * (attempt + 1)
+                console.warn(`Gemini 429 - retrying in ${wait}ms (attempt ${attempt + 1}/${MAX_RETRIES})`)
+                await new Promise(r => setTimeout(r, wait))
+                continue
+            }
+
+            console.error('Gemini API error:', error)
+
+            if (is429) {
+                return lang === 'es'
+                    ? '⚠️ El asistente alcanzó el límite de uso de la API. Intenta de nuevo en 1 minuto, o actualiza tu plan en https://ai.google.dev'
+                    : '⚠️ Assistant hit API rate limit. Try again in 1 minute, or upgrade your plan at https://ai.google.dev'
+            }
+
+            return lang === 'es'
+                ? `Error al conectar con el asistente: ${error.message}`
+                : `Error connecting to assistant: ${error.message}`
+        }
     }
+
+    return lang === 'es' ? 'Error inesperado del asistente.' : 'Unexpected assistant error.'
 }

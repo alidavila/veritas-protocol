@@ -1,13 +1,12 @@
 import { motion } from 'framer-motion'
 import { ArrowRight, Check, Code2, Lock, Shield, Terminal, Zap, Wallet, Fingerprint } from 'lucide-react'
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
 import { ServiceMarketplace } from './ServiceMarketplace'
 
-const DashboardAssistant = lazy(() => import('./DashboardAssistant').then(m => ({ default: m.DashboardAssistant })))
 
 // Utility for clean classes
 function cn(...inputs: ClassValue[]) {
@@ -15,8 +14,6 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export function VeritasResendLanding() {
-    const [showChat, setShowChat] = useState(false)
-
     return (
         <div className="min-h-screen bg-black text-white selection:bg-emerald-500/30 selection:text-emerald-200 font-sans overflow-x-hidden">
             <Navbar />
@@ -27,16 +24,6 @@ export function VeritasResendLanding() {
             <EconomySection />
             <FaqSection />
             <CtaSection />
-            
-            {/* Chat Trigger & Overlay */}
-            <FloatingSupport onClick={() => setShowChat(!showChat)} isOpen={showChat} />
-            {showChat && (
-                <div className="fixed bottom-24 right-8 z-40 w-96 h-[500px] bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300">
-                    <Suspense fallback={<div className="flex h-full items-center justify-center text-emerald-500">Loading AI...</div>}>
-                        <DashboardAssistant />
-                    </Suspense>
-                </div>
-            )}
         </div>
     )
 }
@@ -154,7 +141,7 @@ function HeroSection() {
                         Crear Identidad Agente
                         <ArrowRight className="w-5 h-5" />
                     </Link>
-                    <button 
+                    <button
                         onClick={handleCopy}
                         className="h-14 px-8 rounded-full border border-white/10 bg-white/5 text-white font-semibold text-base hover:bg-white/10 transition-all backdrop-blur-sm flex items-center gap-2"
                     >
@@ -498,31 +485,3 @@ function FaqSection() {
     )
 }
 
-function FloatingSupport({ onClick, isOpen }: { onClick: () => void, isOpen: boolean }) {
-    return (
-        <motion.button
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            whileHover={{ scale: 1.1 }}
-            onClick={onClick}
-            className="fixed bottom-8 right-8 w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)] z-50 text-black overflow-hidden group"
-        >
-            {isOpen ? (
-                <span className="font-bold text-xl">✕</span>
-            ) : (
-                <>
-                    <div className="absolute inset-0 bg-white/20 blur-sm rounded-full" />
-                    <motion.div
-                        animate={{ rotate: [0, 10, -10, 0] }}
-                        transition={{ repeat: Infinity, duration: 5, repeatDelay: 2 }}
-                    >
-                        <div className="relative">
-                            <div className="w-3 h-3 bg-red-500 rounded-full absolute -top-1 -right-1 border-2 border-emerald-500" />
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                        </div>
-                    </motion.div>
-                </>
-            )}
-        </motion.button>
-    )
-}
