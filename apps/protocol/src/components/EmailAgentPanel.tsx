@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import {
     Mail, Play, Square, Check, X, Clock, Send, Settings,
-    RefreshCw, ChevronDown, ChevronUp, Eye, Ban, Zap,
-    Calendar, Hash, AlertTriangle, TrendingUp
+    RefreshCw, Eye, Ban, Zap
 } from 'lucide-react'
 
 interface EmailDraft {
@@ -238,8 +237,6 @@ export function EmailAgentPanel() {
     }
 
     const pendingDrafts = drafts.filter(d => d.details.status === 'WAITING_APPROVAL')
-    const sentDrafts = drafts.filter(d => d.details.status === 'SENT')
-    const approvedDrafts = drafts.filter(d => d.details.status === 'APPROVED')
 
     if (loading) {
         return (
@@ -264,8 +261,8 @@ export function EmailAgentPanel() {
                             <h2 className="text-lg font-bold text-white flex items-center gap-2">
                                 Email Agent
                                 <span className={`text-[10px] px-2 py-0.5 rounded-full border uppercase font-mono ${config.enabled
-                                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                                        : 'bg-zinc-800 text-zinc-500 border-zinc-700'
+                                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                                    : 'bg-zinc-800 text-zinc-500 border-zinc-700'
                                     }`}>
                                     {config.enabled ? 'ACTIVE' : 'PAUSED'}
                                 </span>
@@ -293,8 +290,8 @@ export function EmailAgentPanel() {
                             onClick={toggleEnabled}
                             disabled={saving}
                             className={`px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${config.enabled
-                                    ? 'bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20'
-                                    : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20'
+                                ? 'bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20'
+                                : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20'
                                 }`}
                         >
                             {config.enabled ? <Square className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
@@ -331,7 +328,7 @@ export function EmailAgentPanel() {
                     <div className="w-full bg-zinc-900 h-2 rounded-full overflow-hidden">
                         <div
                             className={`h-full rounded-full transition-all ${stats.sent_today >= config.daily_limit ? 'bg-red-500' :
-                                    stats.sent_today > config.daily_limit * 0.8 ? 'bg-yellow-500' : 'bg-emerald-500'
+                                stats.sent_today > config.daily_limit * 0.8 ? 'bg-yellow-500' : 'bg-emerald-500'
                                 }`}
                             style={{ width: `${Math.min((stats.sent_today / config.daily_limit) * 100, 100)}%` }}
                         />
@@ -520,8 +517,8 @@ export function EmailAgentPanel() {
                             >
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                     <div className={`w-2 h-2 rounded-full shrink-0 ${draft.details.status === 'WAITING_APPROVAL' ? 'bg-yellow-500 animate-pulse' :
-                                            draft.details.status === 'APPROVED' ? 'bg-blue-500' :
-                                                draft.details.status === 'SENT' ? 'bg-emerald-500' : 'bg-red-500'
+                                        draft.details.status === 'APPROVED' ? 'bg-blue-500' :
+                                            draft.details.status === 'SENT' ? 'bg-emerald-500' : 'bg-red-500'
                                         }`} />
 
                                     <div className="min-w-0 flex-1">
@@ -537,9 +534,9 @@ export function EmailAgentPanel() {
 
                                 <div className="flex items-center gap-2 shrink-0 ml-4">
                                     <span className={`text-[10px] px-2 py-0.5 rounded border uppercase font-mono ${draft.details.status === 'WAITING_APPROVAL' ? 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10' :
-                                            draft.details.status === 'APPROVED' ? 'text-blue-400 border-blue-500/30 bg-blue-500/10' :
-                                                draft.details.status === 'SENT' ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' :
-                                                    'text-red-400 border-red-500/30 bg-red-500/10'
+                                        draft.details.status === 'APPROVED' ? 'text-blue-400 border-blue-500/30 bg-blue-500/10' :
+                                            draft.details.status === 'SENT' ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' :
+                                                'text-red-400 border-red-500/30 bg-red-500/10'
                                         }`}>
                                         {draft.details.status.replace('_', ' ')}
                                     </span>
