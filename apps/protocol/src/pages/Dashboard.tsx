@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useVeritasState } from '../hooks/useVeritasState'
 import { agentsService, Agent } from '../lib/agents'
+import { EmailAgentPanel } from '../components/EmailAgentPanel'
 
 const THEME = {
     bg: 'bg-black',
@@ -252,8 +253,8 @@ export function DashboardPage() {
                                         <div key={agent.id} className={`bg-zinc-900/40 border ${agent.status === 'active' ? 'border-emerald-500/30' : 'border-zinc-800'} rounded-xl p-4 flex items-center justify-between group hover:border-zinc-700 transition-all`}>
                                             <div className="flex items-center gap-4">
                                                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${agent.type === 'scraper' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
-                                                        agent.type === 'sales' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20' :
-                                                            'bg-zinc-800 text-zinc-400'
+                                                    agent.type === 'sales' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20' :
+                                                        'bg-zinc-800 text-zinc-400'
                                                     } border`}>
                                                     {agent.type === 'scraper' ? <Target className="w-5 h-5" /> :
                                                         agent.type === 'sales' ? <Mail className="w-5 h-5" /> :
@@ -263,8 +264,8 @@ export function DashboardPage() {
                                                     <div className="flex items-center gap-2">
                                                         <h3 className="font-bold text-sm">{agent.name}</h3>
                                                         <span className={`text-[10px] px-1.5 py-0.5 rounded border uppercase ${agent.status === 'active'
-                                                                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                                                                : 'bg-zinc-800 text-zinc-500 border-zinc-700'
+                                                            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                                                            : 'bg-zinc-800 text-zinc-500 border-zinc-700'
                                                             }`}>
                                                             {agent.status}
                                                         </span>
@@ -278,8 +279,8 @@ export function DashboardPage() {
                                                 <button
                                                     onClick={() => toggleAgent(agent)}
                                                     className={`p-2 rounded-lg transition-colors ${agent.status === 'active'
-                                                            ? 'text-emerald-500 hover:bg-emerald-900/30'
-                                                            : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+                                                        ? 'text-emerald-500 hover:bg-emerald-900/30'
+                                                        : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
                                                         }`}
                                                     title={agent.status === 'active' ? "Pause Agent" : "Start Agent"}
                                                 >
@@ -368,7 +369,12 @@ export function DashboardPage() {
                         </div>
                     </section>
 
-                    {/* 3. ACTIVITY LOG (Reduced) */}
+                    {/* 3. EMAIL AGENT CONTROL */}
+                    <section>
+                        <EmailAgentPanel />
+                    </section>
+
+                    {/* 4. ACTIVITY LOG (Reduced) */}
                     <section>
                         <h2 className="text-sm font-bold text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                             Recent Signals
