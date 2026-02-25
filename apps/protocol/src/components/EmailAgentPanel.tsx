@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { useTranslation } from 'react-i18next'
 import {
     Mail, Play, Square, Check, X, Clock, Send, Settings,
     RefreshCw, Eye, Ban, Zap
@@ -26,8 +27,8 @@ interface EmailConfig {
     enabled: boolean
     daily_limit: number
     sent_today: number
-    schedule_start: number // hour (0-23)
-    schedule_end: number   // hour (0-23)
+    schedule_start: number
+    schedule_end: number
     from_name: string
     from_email: string
     blacklist: string[]
@@ -42,7 +43,7 @@ const DEFAULT_CONFIG: EmailConfig = {
     sent_today: 0,
     schedule_start: 9,
     schedule_end: 18,
-    from_name: 'Veritas Agents',
+    from_name: 'Agentes Veritas',
     from_email: 'onboarding@resend.dev',
     blacklist: [],
     follow_up_days: 3,
@@ -50,13 +51,8 @@ const DEFAULT_CONFIG: EmailConfig = {
     template_style: 'cold_outreach'
 }
 
-const TEMPLATE_LABELS: Record<string, string> = {
-    cold_outreach: '🧊 Cold Outreach',
-    value_first: '💎 Value First',
-    question_hook: '❓ Question Hook'
-}
-
 export function EmailAgentPanel() {
+    const { t } = useTranslation()
     const [config, setConfig] = useState<EmailConfig>(DEFAULT_CONFIG)
     const [drafts, setDrafts] = useState<EmailDraft[]>([])
     const [loading, setLoading] = useState(true)
@@ -72,7 +68,6 @@ export function EmailAgentPanel() {
         rejected: 0
     })
 
-    // Load config + drafts + stats
     useEffect(() => {
         loadAll()
     }, [])
@@ -127,7 +122,6 @@ export function EmailAgentPanel() {
     const saveConfig = async () => {
         setSaving(true)
         try {
-            // Get existing config and merge
             const { data: existing } = await supabase
                 .from('agent_control')
                 .select('config')
@@ -148,7 +142,6 @@ export function EmailAgentPanel() {
                     updated_at: new Date().toISOString()
                 })
 
-            // Also send command
             await supabase
                 .from('agent_commands')
                 .insert([{
@@ -156,7 +149,6 @@ export function EmailAgentPanel() {
                     agent_id: 'did:veritas:marketer:001',
                     status: 'pending'
                 }])
-
         } catch (e) {
             console.error('Error saving config:', e)
         } finally {
@@ -168,7 +160,6 @@ export function EmailAgentPanel() {
         const newConfig = { ...config, enabled: !config.enabled }
         setConfig(newConfig)
 
-        // Save immediately on toggle
         setSaving(true)
         try {
             const { data: existing } = await supabase
@@ -236,35 +227,53 @@ export function EmailAgentPanel() {
         setConfig({ ...config, blacklist: config.blacklist.filter(d => d !== domain) })
     }
 
+    const getStatusLabel = (status: string) => {
+        const map: Record<string, string> = {
+            WAITING_APPROVAL: t('emailAgent.statusWaiting'),
+            APPROVED: t('emailAgent.statusApproved'),
+            REJECTED: t('emailAgent.statusRejected'),
+            SENT: t('emailAgent.statusSent')
+        }
+        return map[status] || status
+    }
+
+    const getTemplateLabel = (key: string) => {
+        const map: Record<string, string> = {
+            cold_outreach: t('emailAgent.templateCold'),
+            value_first: t('emailAgent.templateValue'),
+            question_hook: t('emailAgent.templateQuestion')
+        }
+        return map[key] || key
+    }
+
     const pendingDrafts = drafts.filter(d => d.details.status === 'WAITING_APPROVAL')
 
     if (loading) {
         return (
             <div className="p-6 text-center text-zinc-500">
                 <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2" />
-                Loading Email Agent...
+                {t('emailAgent.loading')}
             </div>
         )
     }
 
     return (
         <div className="space-y-6">
-            {/* ── HEADER: ON/OFF + Stats ── */}
+            {/* ── HEADER ── */}
             <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${config.enabled ? 'bg-purple-500/10 border-purple-500/30' : 'bg-zinc-900 border-zinc-700'
-                            }`}>
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${config.enabled ? 'bg-purple-500/10 border-purple-500/30' : 'bg-zinc-900 border-zinc-700'}`}>
                             <Mail className={`w-6 h-6 ${config.enabled ? 'text-purple-400' : 'text-zinc-500'}`} />
                         </div>
                         <div>
                             <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                                Email Agent
+                                {t('emailAgent.title')}
                                 <span className={`text-[10px] px-2 py-0.5 rounded-full border uppercase font-mono ${config.enabled
                                     ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                                     : 'bg-zinc-800 text-zinc-500 border-zinc-700'
                                     }`}>
-                                    {config.enabled ? 'ACTIVE' : 'PAUSED'}
+                                    {config.enabled ? t('emailAgent.active') : t('emailAgent.paused')}
                                 </span>
                             </h2>
                             <p className="text-xs text-zinc-500 font-mono">did:veritas:marketer:001</p>
@@ -275,14 +284,14 @@ export function EmailAgentPanel() {
                         <button
                             onClick={() => setShowConfig(!showConfig)}
                             className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-                            title="Settings"
+                            title={t('emailAgent.settings')}
                         >
                             <Settings className="w-5 h-5" />
                         </button>
                         <button
                             onClick={loadAll}
                             className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-                            title="Refresh"
+                            title={t('emailAgent.refresh')}
                         >
                             <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
                         </button>
@@ -295,7 +304,7 @@ export function EmailAgentPanel() {
                                 }`}
                         >
                             {config.enabled ? <Square className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
-                            {config.enabled ? 'Detener' : 'Activar'}
+                            {config.enabled ? t('emailAgent.stop') : t('emailAgent.activate')}
                         </button>
                     </div>
                 </div>
@@ -303,11 +312,11 @@ export function EmailAgentPanel() {
                 {/* Stats Row */}
                 <div className="grid grid-cols-5 gap-3">
                     {[
-                        { label: 'Pending', value: stats.pending, icon: Clock, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
-                        { label: 'Approved', value: stats.approved, icon: Check, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-                        { label: 'Sent Total', value: stats.total_sent, icon: Send, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-                        { label: 'Sent Today', value: stats.sent_today, icon: Zap, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-                        { label: 'Rejected', value: stats.rejected, icon: X, color: 'text-red-500', bg: 'bg-red-500/10' },
+                        { label: t('emailAgent.statsPending'), value: stats.pending, icon: Clock, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
+                        { label: t('emailAgent.statsApproved'), value: stats.approved, icon: Check, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+                        { label: t('emailAgent.statsTotalSent'), value: stats.total_sent, icon: Send, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+                        { label: t('emailAgent.statsSentToday'), value: stats.sent_today, icon: Zap, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+                        { label: t('emailAgent.statsRejected'), value: stats.rejected, icon: X, color: 'text-red-500', bg: 'bg-red-500/10' },
                     ].map((s, i) => (
                         <div key={i} className="bg-zinc-900/50 border border-zinc-800/50 rounded-xl p-3 text-center">
                             <div className={`inline-flex p-1.5 rounded-lg ${s.bg} mb-1`}>
@@ -322,7 +331,7 @@ export function EmailAgentPanel() {
                 {/* Daily Limit Bar */}
                 <div className="mt-4 pt-4 border-t border-zinc-800">
                     <div className="flex justify-between text-xs mb-1">
-                        <span className="text-zinc-500">Daily Usage</span>
+                        <span className="text-zinc-500">{t('emailAgent.dailyUsage')}</span>
                         <span className="text-zinc-400 font-mono">{stats.sent_today} / {config.daily_limit}</span>
                     </div>
                     <div className="w-full bg-zinc-900 h-2 rounded-full overflow-hidden">
@@ -336,18 +345,17 @@ export function EmailAgentPanel() {
                 </div>
             </div>
 
-            {/* ── CONFIG PANEL (Collapsible) ── */}
+            {/* ── CONFIG PANEL ── */}
             {showConfig && (
                 <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-6 animate-in slide-in-from-top-2">
                     <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
-                        <Settings className="w-4 h-4" /> Configuration
+                        <Settings className="w-4 h-4" /> {t('emailAgent.configuration')}
                     </h3>
 
                     <div className="grid grid-cols-2 gap-6">
-                        {/* Left Column */}
                         <div className="space-y-4">
                             <div>
-                                <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">Daily Limit</label>
+                                <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">{t('emailAgent.dailyLimit')}</label>
                                 <input
                                     type="number"
                                     value={config.daily_limit}
@@ -357,19 +365,17 @@ export function EmailAgentPanel() {
                             </div>
 
                             <div>
-                                <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">Schedule (Hours)</label>
+                                <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">{t('emailAgent.schedule')}</label>
                                 <div className="flex gap-2 items-center">
                                     <input
-                                        type="number"
-                                        min="0" max="23"
+                                        type="number" min="0" max="23"
                                         value={config.schedule_start}
                                         onChange={e => setConfig({ ...config, schedule_start: parseInt(e.target.value) || 9 })}
                                         className="w-20 bg-black border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
                                     />
-                                    <span className="text-zinc-500 text-sm">to</span>
+                                    <span className="text-zinc-500 text-sm">{t('emailAgent.scheduleTo')}</span>
                                     <input
-                                        type="number"
-                                        min="0" max="23"
+                                        type="number" min="0" max="23"
                                         value={config.schedule_end}
                                         onChange={e => setConfig({ ...config, schedule_end: parseInt(e.target.value) || 18 })}
                                         className="w-20 bg-black border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
@@ -378,7 +384,7 @@ export function EmailAgentPanel() {
                             </div>
 
                             <div>
-                                <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">Follow-Up After (days)</label>
+                                <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">{t('emailAgent.followUpDays')}</label>
                                 <input
                                     type="number"
                                     value={config.follow_up_days}
@@ -388,23 +394,22 @@ export function EmailAgentPanel() {
                             </div>
 
                             <div>
-                                <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">Template Style</label>
+                                <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">{t('emailAgent.templateStyle')}</label>
                                 <select
                                     value={config.template_style}
                                     onChange={e => setConfig({ ...config, template_style: e.target.value as any })}
                                     className="w-full bg-black border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
                                 >
-                                    {Object.entries(TEMPLATE_LABELS).map(([k, v]) => (
-                                        <option key={k} value={k}>{v}</option>
+                                    {['cold_outreach', 'value_first', 'question_hook'].map(k => (
+                                        <option key={k} value={k}>{getTemplateLabel(k)}</option>
                                     ))}
                                 </select>
                             </div>
                         </div>
 
-                        {/* Right Column */}
                         <div className="space-y-4">
                             <div>
-                                <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">From Name</label>
+                                <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">{t('emailAgent.senderName')}</label>
                                 <input
                                     type="text"
                                     value={config.from_name}
@@ -414,7 +419,7 @@ export function EmailAgentPanel() {
                             </div>
 
                             <div>
-                                <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">From Email</label>
+                                <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">{t('emailAgent.senderEmail')}</label>
                                 <input
                                     type="email"
                                     value={config.from_email}
@@ -425,8 +430,8 @@ export function EmailAgentPanel() {
 
                             <div className="flex items-center justify-between bg-zinc-900/50 border border-zinc-800 rounded-lg p-3">
                                 <div>
-                                    <p className="text-sm text-white font-medium">Auto-Approve Drafts</p>
-                                    <p className="text-xs text-zinc-500">Skip manual review</p>
+                                    <p className="text-sm text-white font-medium">{t('emailAgent.autoApprove')}</p>
+                                    <p className="text-xs text-zinc-500">{t('emailAgent.autoApproveDesc')}</p>
                                 </div>
                                 <button
                                     onClick={() => setConfig({ ...config, auto_approve: !config.auto_approve })}
@@ -436,10 +441,9 @@ export function EmailAgentPanel() {
                                 </button>
                             </div>
 
-                            {/* Blacklist */}
                             <div>
                                 <label className="text-xs text-zinc-500 uppercase tracking-wider block mb-1">
-                                    <Ban className="w-3 h-3 inline mr-1" />Blacklist Domains
+                                    <Ban className="w-3 h-3 inline mr-1" />{t('emailAgent.blacklist')}
                                 </label>
                                 <div className="flex gap-2">
                                     <input
@@ -447,11 +451,11 @@ export function EmailAgentPanel() {
                                         value={blacklistInput}
                                         onChange={e => setBlacklistInput(e.target.value)}
                                         onKeyDown={e => e.key === 'Enter' && addToBlacklist()}
-                                        placeholder="domain.com"
+                                        placeholder={t('emailAgent.blacklistPlaceholder')}
                                         className="flex-1 bg-black border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white focus:border-red-500 focus:outline-none"
                                     />
                                     <button onClick={addToBlacklist} className="px-3 py-2 bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg text-sm hover:bg-red-500/20">
-                                        Block
+                                        {t('emailAgent.block')}
                                     </button>
                                 </div>
                                 {config.blacklist.length > 0 && (
@@ -475,7 +479,7 @@ export function EmailAgentPanel() {
                             className="px-6 py-2 bg-emerald-500 text-black font-bold rounded-lg hover:bg-emerald-400 transition-colors disabled:opacity-50 text-sm flex items-center gap-2"
                         >
                             {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                            Save Configuration
+                            {t('emailAgent.saveConfig')}
                         </button>
                     </div>
                 </div>
@@ -486,10 +490,10 @@ export function EmailAgentPanel() {
                 <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
                     <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
                         <Mail className="w-4 h-4" />
-                        Draft Inbox
+                        {t('emailAgent.draftInbox')}
                         {stats.pending > 0 && (
                             <span className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 px-2 py-0.5 rounded-full text-[10px]">
-                                {stats.pending} pending
+                                {t('emailAgent.pendingCount', { count: stats.pending })}
                             </span>
                         )}
                     </h3>
@@ -498,29 +502,27 @@ export function EmailAgentPanel() {
                             onClick={approveAll}
                             className="text-xs px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/20 flex items-center gap-1"
                         >
-                            <Check className="w-3 h-3" /> Approve All ({pendingDrafts.length})
+                            <Check className="w-3 h-3" /> {t('emailAgent.approveAll', { count: pendingDrafts.length })}
                         </button>
                     )}
                 </div>
 
                 {drafts.length === 0 ? (
                     <div className="p-8 text-center text-zinc-600 italic">
-                        No drafts yet. Start the Email Agent to generate outreach.
+                        {t('emailAgent.noDrafts')}
                     </div>
                 ) : (
                     <div className="divide-y divide-zinc-900">
                         {drafts.slice(0, 20).map(draft => (
                             <div
                                 key={draft.id}
-                                className={`p-4 flex items-center justify-between hover:bg-zinc-900/30 transition-colors ${draft.details.status === 'WAITING_APPROVAL' ? 'bg-yellow-500/[0.02]' : ''
-                                    }`}
+                                className={`p-4 flex items-center justify-between hover:bg-zinc-900/30 transition-colors ${draft.details.status === 'WAITING_APPROVAL' ? 'bg-yellow-500/[0.02]' : ''}`}
                             >
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                     <div className={`w-2 h-2 rounded-full shrink-0 ${draft.details.status === 'WAITING_APPROVAL' ? 'bg-yellow-500 animate-pulse' :
                                         draft.details.status === 'APPROVED' ? 'bg-blue-500' :
                                             draft.details.status === 'SENT' ? 'bg-emerald-500' : 'bg-red-500'
                                         }`} />
-
                                     <div className="min-w-0 flex-1">
                                         <div className="flex items-center gap-2">
                                             <span className="text-sm font-medium text-white truncate">{draft.details.target_domain}</span>
@@ -538,13 +540,13 @@ export function EmailAgentPanel() {
                                             draft.details.status === 'SENT' ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' :
                                                 'text-red-400 border-red-500/30 bg-red-500/10'
                                         }`}>
-                                        {draft.details.status.replace('_', ' ')}
+                                        {getStatusLabel(draft.details.status)}
                                     </span>
 
                                     <button
                                         onClick={() => setPreviewDraft(previewDraft?.id === draft.id ? null : draft)}
                                         className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-800"
-                                        title="Preview"
+                                        title={t('emailAgent.preview')}
                                     >
                                         <Eye className="w-3.5 h-3.5" />
                                     </button>
@@ -554,14 +556,14 @@ export function EmailAgentPanel() {
                                             <button
                                                 onClick={() => approveDraft(draft)}
                                                 className="p-1.5 rounded-lg text-emerald-500 hover:bg-emerald-500/10"
-                                                title="Approve"
+                                                title={t('emailAgent.approve')}
                                             >
                                                 <Check className="w-3.5 h-3.5" />
                                             </button>
                                             <button
                                                 onClick={() => rejectDraft(draft)}
                                                 className="p-1.5 rounded-lg text-red-500 hover:bg-red-500/10"
-                                                title="Reject"
+                                                title={t('emailAgent.reject')}
                                             >
                                                 <X className="w-3.5 h-3.5" />
                                             </button>
@@ -578,7 +580,7 @@ export function EmailAgentPanel() {
                     <div className="border-t border-zinc-800 p-6 bg-zinc-900/30">
                         <div className="flex items-center justify-between mb-4">
                             <div>
-                                <p className="text-xs text-zinc-500">To: <span className="text-zinc-300">{previewDraft.details.target_email}</span></p>
+                                <p className="text-xs text-zinc-500">{t('common.to')}: <span className="text-zinc-300">{previewDraft.details.target_email}</span></p>
                                 <p className="text-sm font-bold text-white mt-1">{previewDraft.details.subject}</p>
                             </div>
                             <button onClick={() => setPreviewDraft(null)} className="text-zinc-500 hover:text-white">
@@ -595,13 +597,13 @@ export function EmailAgentPanel() {
                                     onClick={() => { approveDraft(previewDraft); setPreviewDraft(null) }}
                                     className="flex-1 py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-lg font-bold text-sm hover:bg-emerald-500/20 flex items-center justify-center gap-2"
                                 >
-                                    <Check className="w-4 h-4" /> Approve & Queue
+                                    <Check className="w-4 h-4" /> {t('emailAgent.approveAndQueue')}
                                 </button>
                                 <button
                                     onClick={() => { rejectDraft(previewDraft); setPreviewDraft(null) }}
                                     className="flex-1 py-2 bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg font-bold text-sm hover:bg-red-500/20 flex items-center justify-center gap-2"
                                 >
-                                    <X className="w-4 h-4" /> Reject
+                                    <X className="w-4 h-4" /> {t('emailAgent.reject')}
                                 </button>
                             </div>
                         )}

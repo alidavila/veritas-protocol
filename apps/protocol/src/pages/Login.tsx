@@ -4,10 +4,13 @@ import { ArrowRight, ShieldCheck, Mail, AlertCircle, Lock, Eye, EyeOff } from 'l
 import { Link, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { useAuth } from '../contexts/AuthContext'
+import { useTranslation } from 'react-i18next'
+import { LanguageSwitcher } from '../components/LanguageSwitcher'
 
 export function LoginPage() {
     const navigate = useNavigate()
     const { signInWithGoogle, signInWithMagicLink, signInWithPassword, signUp, user } = useAuth()
+    const { t } = useTranslation()
     const [loading, setLoading] = useState(false)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -16,7 +19,6 @@ export function LoginPage() {
     const [mode, setMode] = useState<'login' | 'signup' | 'magiclink'>('login')
     const [sent, setSent] = useState(false)
 
-    // Redirect if already logged in
     if (user) {
         navigate('/dashboard')
         return null
@@ -31,9 +33,9 @@ export function LoginPage() {
             navigate('/dashboard')
         } catch (err: any) {
             if (err.message?.includes('Invalid login credentials')) {
-                setError('Email o contraseña incorrectos')
+                setError(t('login.invalidCredentials'))
             } else {
-                setError(err.message || 'Error al iniciar sesión')
+                setError(err.message || t('login.loginError'))
             }
         } finally {
             setLoading(false)
@@ -43,19 +45,19 @@ export function LoginPage() {
     const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault()
         if (password.length < 6) {
-            setError('La contraseña debe tener al menos 6 caracteres')
+            setError(t('login.passwordTooShort'))
             return
         }
         setLoading(true)
         setError(null)
         try {
             await signUp(email, password)
-            setSent(true) // Show "check your email" for verification
+            setSent(true)
         } catch (err: any) {
             if (err.message?.includes('already registered')) {
-                setError('Este email ya está registrado. Intenta iniciar sesión.')
+                setError(t('login.alreadyRegistered'))
             } else {
-                setError(err.message || 'Error al registrar')
+                setError(err.message || t('login.signupError'))
             }
         } finally {
             setLoading(false)
@@ -70,7 +72,7 @@ export function LoginPage() {
             await signInWithMagicLink(email)
             setSent(true)
         } catch (err: any) {
-            setError(err.message || "Error sending magic link")
+            setError(err.message || t('login.magicLinkError'))
         } finally {
             setLoading(false)
         }
@@ -83,9 +85,9 @@ export function LoginPage() {
             await signInWithGoogle()
         } catch (err: any) {
             if (err.message?.includes('provider is not enabled')) {
-                setError("Google Auth no está habilitado en Supabase.")
+                setError(t('login.googleNotEnabled'))
             } else {
-                setError(err.message || "Error with Google Auth")
+                setError(err.message || t('login.googleError'))
             }
             setLoading(false)
         }
@@ -94,10 +96,14 @@ export function LoginPage() {
     return (
         <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 relative overflow-hidden">
             <Helmet>
-                <title>{mode === 'signup' ? 'Sign Up' : 'Login'} | Veritas Protocol</title>
+                <title>{mode === 'signup' ? t('login.titleSignup') : t('login.titleLogin')} | Veritas Protocol</title>
             </Helmet>
 
-            {/* Background */}
+            {/* Language Switcher (top right) */}
+            <div className="absolute top-6 right-6 z-20">
+                <LanguageSwitcher variant="compact" />
+            </div>
+
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-900/20 via-black to-black pointer-events-none" />
             <div className="absolute top-0 w-full h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
 
@@ -108,9 +114,9 @@ export function LoginPage() {
                             <div className="w-6 h-6 bg-emerald-500 rounded-sm" />
                         </div>
                     </Link>
-                    <h1 className="text-3xl font-bold tracking-tight mb-2">Veritas Console</h1>
+                    <h1 className="text-3xl font-bold tracking-tight mb-2">{t('login.consoleTitle')}</h1>
                     <p className="text-zinc-500">
-                        {mode === 'signup' ? 'Crea tu cuenta para desplegar agentes.' : 'Acceso seguro a tu infraestructura.'}
+                        {mode === 'signup' ? t('login.signupSubtitle') : t('login.loginSubtitle')}
                     </p>
                 </div>
 
@@ -131,27 +137,27 @@ export function LoginPage() {
                             <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
                                 <Mail className="w-8 h-8 text-emerald-500" />
                             </div>
-                            <h3 className="text-xl font-bold text-white mb-2">Revisa tu Email</h3>
-                            <p className="text-zinc-400 text-sm mb-6">
-                                {mode === 'signup'
-                                    ? <>Hemos enviado un enlace de verificación a <strong>{email}</strong>. Confírmalo para activar tu cuenta.</>
-                                    : <>Hemos enviado un enlace mágico a <strong>{email}</strong>. Haz click para entrar.</>
-                                }
-                            </p>
+                            <h3 className="text-xl font-bold text-white mb-2">{t('login.checkEmail')}</h3>
+                            <p className="text-zinc-400 text-sm mb-6"
+                                dangerouslySetInnerHTML={{
+                                    __html: mode === 'signup'
+                                        ? t('login.verificationSent', { email })
+                                        : t('login.magicLinkSent', { email })
+                                }}
+                            />
                             <button onClick={() => { setSent(false); setMode('login') }} className="text-emerald-500 text-sm hover:underline">
-                                Volver al login
+                                {t('login.backToLogin')}
                             </button>
                         </div>
                     ) : (
                         <div className="space-y-6">
-                            {/* Google */}
                             <button
                                 onClick={handleGoogle}
                                 disabled={loading}
                                 className="w-full bg-white text-black font-bold h-12 rounded-xl hover:bg-zinc-200 transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-lg"
                             >
                                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" />
-                                Continuar con Google
+                                {t('login.continueWithGoogle')}
                             </button>
 
                             <div className="relative">
@@ -159,29 +165,28 @@ export function LoginPage() {
                                     <div className="w-full border-t border-zinc-800" />
                                 </div>
                                 <div className="relative flex justify-center text-xs">
-                                    <span className="bg-zinc-900/50 px-3 text-zinc-600 font-mono">O con email</span>
+                                    <span className="bg-zinc-900/50 px-3 text-zinc-600 font-mono">{t('login.orWithEmail')}</span>
                                 </div>
                             </div>
 
-                            {/* Password Login / Sign Up */}
                             {(mode === 'login' || mode === 'signup') && (
                                 <form onSubmit={mode === 'login' ? handlePasswordLogin : handleSignUp} className="space-y-4">
                                     <div>
-                                        <label className="block text-xs font-mono uppercase text-zinc-500 mb-2">Email</label>
+                                        <label className="block text-xs font-mono uppercase text-zinc-500 mb-2">{t('login.emailLabel')}</label>
                                         <div className="relative">
                                             <Mail className="absolute left-3 top-3.5 w-5 h-5 text-zinc-600" />
                                             <input
                                                 type="email"
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
-                                                placeholder="tu@empresa.com"
+                                                placeholder={t('login.emailPlaceholder')}
                                                 className="w-full bg-black/50 border border-zinc-700 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors placeholder:text-zinc-700"
                                                 required
                                             />
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-mono uppercase text-zinc-500 mb-2">Contraseña</label>
+                                        <label className="block text-xs font-mono uppercase text-zinc-500 mb-2">{t('login.passwordLabel')}</label>
                                         <div className="relative">
                                             <Lock className="absolute left-3 top-3.5 w-5 h-5 text-zinc-600" />
                                             <input
@@ -211,7 +216,7 @@ export function LoginPage() {
                                             <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
                                         ) : (
                                             <>
-                                                {mode === 'signup' ? 'Crear Cuenta' : 'Iniciar Sesión'}
+                                                {mode === 'signup' ? t('login.createAccount') : t('login.signIn')}
                                                 <ArrowRight className="w-4 h-4" />
                                             </>
                                         )}
@@ -219,18 +224,17 @@ export function LoginPage() {
                                 </form>
                             )}
 
-                            {/* Magic Link */}
                             {mode === 'magiclink' && (
                                 <form onSubmit={handleMagicLink} className="space-y-4">
                                     <div>
-                                        <label className="block text-xs font-mono uppercase text-zinc-500 mb-2">Email</label>
+                                        <label className="block text-xs font-mono uppercase text-zinc-500 mb-2">{t('login.emailLabel')}</label>
                                         <div className="relative">
                                             <Mail className="absolute left-3 top-3.5 w-5 h-5 text-zinc-600" />
                                             <input
                                                 type="email"
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
-                                                placeholder="tu@empresa.com"
+                                                placeholder={t('login.emailPlaceholder')}
                                                 className="w-full bg-black/50 border border-zinc-700 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors placeholder:text-zinc-700"
                                                 required
                                             />
@@ -245,7 +249,7 @@ export function LoginPage() {
                                             <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
                                         ) : (
                                             <>
-                                                Enviar Magic Link
+                                                {t('login.sendMagicLink')}
                                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                             </>
                                         )}
@@ -253,26 +257,25 @@ export function LoginPage() {
                                 </form>
                             )}
 
-                            {/* Mode Switchers */}
                             <div className="flex flex-col items-center gap-2 text-xs text-zinc-500">
                                 {mode === 'login' && (
                                     <>
                                         <button onClick={() => { setMode('signup'); setError(null) }} className="hover:text-emerald-400 transition-colors">
-                                            ¿No tienes cuenta? <span className="text-emerald-500 font-semibold">Regístrate</span>
+                                            {t('login.noAccount')} <span className="text-emerald-500 font-semibold">{t('login.register')}</span>
                                         </button>
                                         <button onClick={() => { setMode('magiclink'); setError(null) }} className="hover:text-zinc-300 transition-colors">
-                                            Entrar con Magic Link (sin contraseña)
+                                            {t('login.magicLinkOption')}
                                         </button>
                                     </>
                                 )}
                                 {mode === 'signup' && (
                                     <button onClick={() => { setMode('login'); setError(null) }} className="hover:text-emerald-400 transition-colors">
-                                        ¿Ya tienes cuenta? <span className="text-emerald-500 font-semibold">Inicia sesión</span>
+                                        {t('login.hasAccount')} <span className="text-emerald-500 font-semibold">{t('login.loginLink')}</span>
                                     </button>
                                 )}
                                 {mode === 'magiclink' && (
                                     <button onClick={() => { setMode('login'); setError(null) }} className="hover:text-emerald-400 transition-colors">
-                                        Volver al login con contraseña
+                                        {t('login.backToPasswordLogin')}
                                     </button>
                                 )}
                             </div>
@@ -281,7 +284,7 @@ export function LoginPage() {
 
                     <div className="mt-8 pt-6 border-t border-white/5 text-center flex justify-center items-center gap-2 text-zinc-600 text-xs">
                         <ShieldCheck className="w-3 h-3" />
-                        Protegido por Veritas Protocol Auth
+                        {t('login.protectedBy')}
                     </div>
                 </motion.div>
             </div>

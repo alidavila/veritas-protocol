@@ -149,6 +149,9 @@ async function runSenderLoop() {
     for (const draft of approvedDrafts) {
         console.log(`🚀 Sending Approved Email to ${draft.details.target_domain}...`);
 
+        // Rate limit: Resend allows max 2 req/s — wait 1.5s between sends
+        await new Promise(r => setTimeout(r, 1500));
+
         try {
             if (!resend) throw new Error("No Resend Key");
 

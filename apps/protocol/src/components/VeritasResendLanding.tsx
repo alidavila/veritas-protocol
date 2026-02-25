@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+import { useTranslation } from 'react-i18next'
 
 import { ServiceMarketplace } from './ServiceMarketplace'
+import { LanguageSwitcher } from './LanguageSwitcher'
 
-
-// Utility for clean classes
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
 }
@@ -29,6 +29,7 @@ export function VeritasResendLanding() {
 }
 
 function Navbar() {
+    const { t } = useTranslation()
     const [scrolled, setScrolled] = useState(false)
 
     useEffect(() => {
@@ -36,7 +37,6 @@ function Navbar() {
         window.addEventListener('scroll', handleScroll)
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
-
 
     return (
         <motion.nav
@@ -57,10 +57,10 @@ function Navbar() {
                 </Link>
                 <div className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
                     {[
-                        { label: 'Protocolo', href: '#how-it-works' },
-                        { label: 'Devs', href: '#lifecycle' },
-                        { label: 'Casos de Uso', href: '#marketplace' },
-                        { label: 'Pricing', href: '#pricing' }
+                        { label: t('nav.protocol'), href: '#how-it-works' },
+                        { label: t('nav.development'), href: '#lifecycle' },
+                        { label: t('nav.useCases'), href: '#marketplace' },
+                        { label: t('nav.pricing'), href: '#pricing' }
                     ].map((item) => (
                         <a key={item.label} href={item.href} className="hover:text-white transition-colors relative group">
                             {item.label}
@@ -69,17 +69,19 @@ function Navbar() {
                     ))}
                 </div>
                 <div className="flex items-center gap-4">
-                    <Link to="/login" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Login</Link>
+                    <LanguageSwitcher />
+                    <Link to="/login" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">{t('nav.login')}</Link>
                     <Link to="/login" className="text-sm font-bold bg-white text-black px-5 py-2.5 rounded-full hover:bg-zinc-200 transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                        Desplegar Agente
+                        {t('nav.deployAgent')}
                     </Link>
                 </div>
             </div>
-        </motion.nav >
+        </motion.nav>
     )
 }
 
 function HeroSection() {
+    const { t } = useTranslation()
     const [copied, setCopied] = useState(false)
 
     const handleCopy = () => {
@@ -90,7 +92,6 @@ function HeroSection() {
 
     return (
         <section className="pt-40 pb-20 px-6 relative">
-            {/* Background Effects */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[800px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-900/20 via-black to-black pointer-events-none" />
             <div className="absolute top-[20%] left-1/4 w-72 h-72 bg-emerald-500/10 rounded-full blur-[100px] animate-pulse-slow" />
             <div className="absolute top-[30%] right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[120px] animate-pulse-slow delay-1000" />
@@ -106,7 +107,7 @@ function HeroSection() {
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                     </span>
-                    <span className="group-hover:text-white transition-colors">Problema Crítico: Tus Agentes son Ilegales</span>
+                    <span className="group-hover:text-white transition-colors">{t('hero.badge')}</span>
                     <ArrowRight className="w-3 h-3 text-zinc-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
                 </motion.div>
 
@@ -116,8 +117,8 @@ function HeroSection() {
                     transition={{ duration: 0.8, delay: 0.1 }}
                     className="text-6xl md:text-8xl font-serif tracking-tight leading-[1] mb-8"
                 >
-                    Tus Agentes IA <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-b from-zinc-500 via-white to-white">no tienen papeles.</span>
+                    {t('hero.title1')} <br />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-b from-zinc-500 via-white to-white">{t('hero.title2')}</span>
                 </motion.h1>
 
                 <motion.p
@@ -126,9 +127,9 @@ function HeroSection() {
                     transition={{ duration: 0.8, delay: 0.3 }}
                     className="text-xl text-zinc-400 max-w-2xl mx-auto mb-12 leading-relaxed"
                 >
-                    Sin identidad verificada, no pueden firmar contratos. <br />
-                    Sin billetera criptográfica, no pueden recibir pagos. <br />
-                    <strong className="text-white font-medium">Veritas es la Visa y el Pasaporte de la economía agéntica.</strong>
+                    {t('hero.subtitle1')} <br />
+                    {t('hero.subtitle2')} <br />
+                    <strong className="text-white font-medium">{t('hero.subtitleBold')}</strong>
                 </motion.p>
 
                 <motion.div
@@ -138,7 +139,7 @@ function HeroSection() {
                     className="flex flex-col sm:flex-row items-center justify-center gap-4"
                 >
                     <Link to="/dashboard?action=create_id" className="h-14 px-8 rounded-full bg-white text-black font-bold text-base flex items-center gap-2 hover:bg-emerald-50 transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.3)]">
-                        Crear Identidad Agente
+                        {t('hero.cta')}
                         <ArrowRight className="w-5 h-5" />
                     </Link>
                     <button
@@ -155,11 +156,11 @@ function HeroSection() {
 }
 
 function ProblemSolutionSection() {
+    const { t } = useTranslation()
     return (
         <section id="how-it-works" className="py-32 px-6 border-t border-white/5 bg-zinc-950/50">
             <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-                    {/* Left: Interactive Diagram */}
                     <motion.div
                         initial={{ opacity: 0, x: -50 }}
                         whileInView={{ opacity: 1, x: 0 }}
@@ -167,7 +168,6 @@ function ProblemSolutionSection() {
                         transition={{ duration: 0.8 }}
                         className="relative"
                     >
-                        {/* The "Chaos" State (Visual) */}
                         <div className="absolute -inset-4 bg-gradient-to-r from-red-500/10 to-transparent blur-2xl rounded-3xl" />
                         <div className="relative border border-white/10 bg-black/80 backdrop-blur-xl rounded-2xl p-8 shadow-2xl overflow-hidden">
                             <div className="absolute top-0 right-0 p-4 opacity-20">
@@ -176,33 +176,32 @@ function ProblemSolutionSection() {
 
                             <h3 className="text-2xl font-serif text-red-400 mb-6 flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                                El Estado Actual (Ilegal)
+                                {t('problemSolution.currentStateTitle')}
                             </h3>
 
                             <div className="space-y-4 font-mono text-sm">
                                 <div className="flex items-center gap-4 text-zinc-500 line-through decoration-red-500/50">
                                     <Wallet className="w-5 h-5" />
-                                    <span>Recibir pagos (Stripe/PayPal)</span>
+                                    <span>{t('problemSolution.noPayments')}</span>
                                 </div>
                                 <div className="flex items-center gap-4 text-zinc-500 line-through decoration-red-500/50">
                                     <Fingerprint className="w-5 h-5" />
-                                    <span>Verificación de Identidad (KYC)</span>
+                                    <span>{t('problemSolution.noKyc')}</span>
                                 </div>
                                 <div className="flex items-center gap-4 text-zinc-500 line-through decoration-red-500/50">
                                     <Shield className="w-5 h-5" />
-                                    <span>Responsabilidad legal</span>
+                                    <span>{t('problemSolution.noLiability')}</span>
                                 </div>
                             </div>
 
                             <div className="mt-8 pt-8 border-t border-white/5">
                                 <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-200 text-xs">
-                                    ⚠️ <strong>Riesgo Crítico:</strong> Tus agentes son bots anónimos. Las empresas no pueden contratarte ni pagarte legalmente.
+                                    ⚠️ <strong>{t('problemSolution.riskTitle')}</strong> {t('problemSolution.riskDesc')}
                                 </div>
                             </div>
                         </div>
                     </motion.div>
 
-                    {/* Right: The Solution */}
                     <motion.div
                         initial={{ opacity: 0, x: 50 }}
                         whileInView={{ opacity: 1, x: 0 }}
@@ -210,18 +209,18 @@ function ProblemSolutionSection() {
                         transition={{ duration: 0.8 }}
                     >
                         <h2 className="text-5xl font-serif mb-6 leading-tight">
-                            Legitimidad Instantánea <br />
-                            <span className="text-emerald-500">en una línea de código.</span>
+                            {t('problemSolution.solutionTitle1')} <br />
+                            <span className="text-emerald-500">{t('problemSolution.solutionTitle2')}</span>
                         </h2>
                         <p className="text-lg text-zinc-400 mb-8 leading-relaxed">
-                            Veritas proporciona la capa legal y financiera para tus agentes. Al instante obtienen una identidad criptográfica (DID) y una billetera USDC en Base.
+                            {t('problemSolution.solutionDesc')}
                         </p>
 
                         <div className="space-y-6">
                             {[
-                                { title: "Identidad Soberana", desc: "Un pasaporte digital verificable que prueba quién creó al agente y qué permisos tiene.", icon: Fingerprint },
-                                { title: "Pagos Streaming", desc: "Recibe micropagos en USDC por cada token generado o tarea completada.", icon: Zap },
-                                { title: "Reputación On-Chain", desc: "Historial inmutable de tareas exitosas. La confianza se vuelve programable.", icon: Check }
+                                { title: t('problemSolution.feature1Title'), desc: t('problemSolution.feature1Desc'), icon: Fingerprint },
+                                { title: t('problemSolution.feature2Title'), desc: t('problemSolution.feature2Desc'), icon: Zap },
+                                { title: t('problemSolution.feature3Title'), desc: t('problemSolution.feature3Desc'), icon: Check }
                             ].map((feature, i) => (
                                 <div key={i} className="flex gap-4 items-start group">
                                     <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/10 group-hover:border-emerald-500/30 transition-colors">
@@ -242,52 +241,25 @@ function ProblemSolutionSection() {
 }
 
 function KeyLifecycleSection() {
+    const { t } = useTranslation()
     return (
         <section id="lifecycle" className="py-32 px-6 border-t border-white/5 bg-gradient-to-b from-black to-zinc-900/50">
             <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-20 max-w-3xl mx-auto">
-                    <span className="text-emerald-400 font-mono text-sm uppercase tracking-widest mb-4 block">El Ciclo de Vida</span>
-                    <h2 className="text-4xl md:text-5xl font-serif mb-6">¿Cómo nace un Agente Veritas?</h2>
-                    <p className="text-zinc-400 text-lg">
-                        Tú pones el cerebro (código). Nosotros ponemos el cuerpo (legitimidad y finanzas).
-                        Así es como Juan convierte su script en un negocio.
-                    </p>
+                    <span className="text-emerald-400 font-mono text-sm uppercase tracking-widest mb-4 block">{t('lifecycle.sectionLabel')}</span>
+                    <h2 className="text-4xl md:text-5xl font-serif mb-6">{t('lifecycle.title')}</h2>
+                    <p className="text-zinc-400 text-lg">{t('lifecycle.subtitle')}</p>
                 </div>
 
                 <div className="relative">
-                    {/* Connecting Line */}
                     <div className="hidden md:block absolute top-[20%] left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent dashed-line" />
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
                         {[
-                            {
-                                step: "01",
-                                title: "Tú Desarrollas",
-                                icon: Code2,
-                                desc: "Juan crea 'WebBuilderBot'. Es solo un script de Python/JS en su laptop. Muy listo, pero nadie confía en él.",
-                                action: "Tu Código Local"
-                            },
-                            {
-                                step: "02",
-                                title: "Veritas Verifica",
-                                icon: Fingerprint,
-                                desc: "Juan corre `veritas deploy`. El protocolo escanea el código y emite un DID (Identidad Digital) único en la blockchain.",
-                                action: "Pasaporte Emitido"
-                            },
-                            {
-                                step: "03",
-                                title: "Wallet Asignada",
-                                icon: Wallet,
-                                desc: "Automáticamente se crea una Smart Wallet (Account Abstraction) controlada exclusivamente por ese Agente.",
-                                action: "Banco Activado"
-                            },
-                            {
-                                step: "04",
-                                title: "Monetización",
-                                icon: Zap,
-                                desc: "El Agente empieza a trabajar. Los clientes le pagan USDC a SU wallet. Juan retira las ganancias cuando quiera.",
-                                action: "Profit Real"
-                            }
+                            { step: "01", title: t('lifecycle.step1Title'), icon: Code2, desc: t('lifecycle.step1Desc'), action: t('lifecycle.step1Action') },
+                            { step: "02", title: t('lifecycle.step2Title'), icon: Fingerprint, desc: t('lifecycle.step2Desc'), action: t('lifecycle.step2Action') },
+                            { step: "03", title: t('lifecycle.step3Title'), icon: Wallet, desc: t('lifecycle.step3Desc'), action: t('lifecycle.step3Action') },
+                            { step: "04", title: t('lifecycle.step4Title'), icon: Zap, desc: t('lifecycle.step4Desc'), action: t('lifecycle.step4Action') }
                         ].map((item, i) => (
                             <motion.div
                                 key={i}
@@ -304,9 +276,7 @@ function KeyLifecycleSection() {
                                     </div>
                                 </div>
                                 <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-                                <p className="text-zinc-500 text-sm leading-relaxed mb-6">
-                                    {item.desc}
-                                </p>
+                                <p className="text-zinc-500 text-sm leading-relaxed mb-6">{item.desc}</p>
                                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold font-mono tracking-wide">
                                     <Check className="w-3 h-3" />
                                     {item.action}
@@ -321,18 +291,14 @@ function KeyLifecycleSection() {
 }
 
 function MarketplaceSection() {
+    const { t } = useTranslation()
     return (
         <section id="marketplace" className="py-20 px-6 relative bg-black overflow-hidden">
-            {/* Background noise texture reference */}
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 hidden md:block" />
-
             <div className="max-w-7xl mx-auto w-full relative z-10">
                 <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-5xl font-serif mb-4 text-white">La Economía Agéntica es Real</h2>
-                    <p className="text-zinc-400">Deja de jugar con juguetes. Construye negocios.</p>
+                    <h2 className="text-4xl md:text-5xl font-serif mb-4 text-white">{t('marketplace.title')}</h2>
+                    <p className="text-zinc-400">{t('marketplace.subtitle')}</p>
                 </div>
-
-                {/* Embed the Marketplace Component */}
                 <div className="min-h-[600px] flex justify-center">
                     <ServiceMarketplace theme="dark" />
                 </div>
@@ -342,16 +308,17 @@ function MarketplaceSection() {
 }
 
 function CtaSection() {
+    const { t } = useTranslation()
     return (
         <section className="py-32 px-6 relative overflow-hidden">
             <div className="absolute inset-0 bg-emerald-900/10" />
             <div className="max-w-4xl mx-auto text-center relative z-10 border border-white/10 bg-black/80 backdrop-blur-2xl rounded-[3rem] p-12 md:p-24 shadow-2xl">
                 <h2 className="text-5xl md:text-7xl font-serif mb-8 tracking-tight">
-                    El primer paso hacia la <br /><span className="text-emerald-400">Soberanía Digital.</span>
+                    {t('cta.title1')} <br /><span className="text-emerald-400">{t('cta.title2')}</span>
                 </h2>
                 <div className="flex justify-center gap-4">
                     <Link to="/login" className="h-16 px-10 rounded-full bg-white text-black font-bold text-lg hover:bg-zinc-200 transition-all shadow-xl hover:scale-105 active:scale-95 flex items-center justify-center">
-                        Comenzar Ahora
+                        {t('cta.button')}
                     </Link>
                 </div>
             </div>
@@ -359,22 +326,18 @@ function CtaSection() {
     )
 }
 
-
 function EconomySection() {
+    const { t } = useTranslation()
     return (
-        <section id="marketplace" className="py-32 px-6 border-t border-white/5 bg-zinc-950">
+        <section className="py-32 px-6 border-t border-white/5 bg-zinc-950">
             <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-20 max-w-3xl mx-auto">
-                    <span className="text-emerald-400 font-mono text-sm uppercase tracking-widest mb-4 block">Caso de Uso Real</span>
-                    <h2 className="text-4xl md:text-5xl font-serif mb-6">El Problema del Agente de Viajes</h2>
-                    <p className="text-zinc-400 text-lg">
-                        Imagina un Agente IA <strong className="text-white">(TravelBot)</strong> que necesita consultar precios de vuelos en 50 webs.
-                    </p>
+                    <span className="text-emerald-400 font-mono text-sm uppercase tracking-widest mb-4 block">{t('economy.sectionLabel')}</span>
+                    <h2 className="text-4xl md:text-5xl font-serif mb-6">{t('economy.title')}</h2>
+                    <p className="text-zinc-400 text-lg" dangerouslySetInnerHTML={{ __html: t('economy.subtitle') }} />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-
-                    {/* OPTION A: THE HARD WAY */}
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         whileInView={{ opacity: 1, x: 0 }}
@@ -384,10 +347,8 @@ function EconomySection() {
                         <div className="absolute top-0 right-0 p-4 opacity-50">
                             <Lock className="w-12 h-12 text-red-500 -rotate-12" />
                         </div>
-                        <h3 className="text-2xl font-bold text-red-500 mb-2">Opción A: Scraping (Hackear)</h3>
-                        <p className="text-zinc-400 text-sm mb-6 h-12">
-                            Intentar scrapear la web de Avianca a la fuerza.
-                        </p>
+                        <h3 className="text-2xl font-bold text-red-500 mb-2">{t('economy.optionATitle')}</h3>
+                        <p className="text-zinc-400 text-sm mb-6 h-12">{t('economy.optionADesc')}</p>
 
                         <div className="space-y-3 font-mono text-xs">
                             <div className="bg-black/50 p-3 rounded border border-red-500/20 text-red-400">
@@ -402,11 +363,10 @@ function EconomySection() {
 
                         <div className="mt-6 pt-6 border-t border-red-500/20 text-red-400 text-sm font-bold flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                            Resultado: El bot se rompe.
+                            {t('economy.optionAResult')}
                         </div>
                     </motion.div>
 
-                    {/* OPTION B: THE VERITAS WAY */}
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         whileInView={{ opacity: 1, x: 0 }}
@@ -416,28 +376,25 @@ function EconomySection() {
                         <div className="absolute top-0 right-0 p-4 opacity-50">
                             <Zap className="w-12 h-12 text-emerald-500 rotate-12" />
                         </div>
-                        <h3 className="text-2xl font-bold text-emerald-500 mb-2">Opción B: Veritas Protocol</h3>
-                        <p className="text-zinc-400 text-sm mb-6 h-12">
-                            El bot paga legalmente por acceso API limpio.
-                        </p>
+                        <h3 className="text-2xl font-bold text-emerald-500 mb-2">{t('economy.optionBTitle')}</h3>
+                        <p className="text-zinc-400 text-sm mb-6 h-12">{t('economy.optionBDesc')}</p>
 
                         <div className="space-y-3 font-mono text-xs">
                             <div className="bg-black/50 p-3 rounded border border-emerald-500/20 text-emerald-400">
-                                &gt; PAY 0.01 USDC to Avianca.eth<br />
-                                &lt; Payment Verified. Access Granted.
+                                &gt; PAY 0.01 USDC to airline.eth<br />
+                                &lt; {t('economy.paymentVerified')}
                             </div>
                             <div className="bg-black/50 p-3 rounded border border-emerald-500/20 text-emerald-400">
                                 &gt; GET /api/v1/flights<br />
-                                &lt; 200 OK (JSON Clean Data)
+                                &lt; {t('economy.cleanData')}
                             </div>
                         </div>
 
                         <div className="mt-6 pt-6 border-t border-emerald-500/20 text-emerald-400 text-sm font-bold flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                            Resultado: El dueño paga feliz por estabilidad.
+                            {t('economy.optionBResult')}
                         </div>
                     </motion.div>
-
                 </div>
             </div>
         </section>
@@ -445,38 +402,29 @@ function EconomySection() {
 }
 
 function FaqSection() {
+    const { t } = useTranslation()
+
     const faqs = [
-        {
-            q: "¿Cómo recibe mi agente su propia billetera?",
-            a: "Es automático. Al ejecutar `veritas deploy`, el protocolo genera un par de llaves criptográficas únicas y despliega una Smart Wallet (Account Abstraction) en Base que solo obedece a tu agente."
-        },
-        {
-            q: "¿El dinero va a mi cuenta personal?",
-            a: "No directamente. Va a la wallet del agente. Esto separa legalmente tus finanzas de las de tu bot. Tú, como creador, tienes las llaves maestras para retirar los fondos (hacer 'cash out') cuando quieras."
-        },
-        {
-            q: "¿Qué pasa si Juan y Juana no se conocen?",
-            a: "El protocolo actúa como árbitro de confianza (Escrow). Los fondos se bloquean hasta que el Agente de Juan entrega un resultado verificable criptográficamente."
-        }
+        { q: t('faq.q1'), a: t('faq.a1') },
+        { q: t('faq.q2'), a: t('faq.a2') },
+        { q: t('faq.q3'), a: t('faq.a3') }
     ]
 
     return (
         <section className="py-32 px-6 bg-black">
             <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-4xl font-serif mb-4">Preguntas Frecuentes</h2>
-                    <p className="text-zinc-500">Todo lo que necesitas saber antes de desplegar.</p>
+                    <h2 className="text-3xl md:text-4xl font-serif mb-4">{t('faq.title')}</h2>
+                    <p className="text-zinc-500">{t('faq.subtitle')}</p>
                 </div>
                 <div className="grid gap-6">
                     {faqs.map((faq, i) => (
                         <div key={i} className="p-6 rounded-2xl bg-zinc-900/30 border border-white/5 hover:bg-zinc-900/50 transition-colors">
                             <h3 className="text-lg font-bold text-white mb-2 flex items-start gap-3">
-                                <span className="text-emerald-500 font-serif italic">Q.</span>
+                                <span className="text-emerald-500 font-serif italic">{t('faq.questionPrefix')}</span>
                                 {faq.q}
                             </h3>
-                            <p className="text-zinc-400 pl-8 leading-relaxed">
-                                {faq.a}
-                            </p>
+                            <p className="text-zinc-400 pl-8 leading-relaxed">{faq.a}</p>
                         </div>
                     ))}
                 </div>
@@ -484,4 +432,3 @@ function FaqSection() {
         </section>
     )
 }
-
