@@ -194,23 +194,36 @@ export const agentsService = {
         if (error) throw error;
     },
 
-    async saveStrategy(strategy: { niche: string; emailSubject: string; status: string }) {
+    async saveStrategy(strategy: { niche: string; emailSubject: string }) {
+        // Read existing config first to avoid overwriting email_agent etc.
+        const { data: existing } = await supabase
+            .from('agent_control')
+            .select('config')
+            .eq('id', 1)
+            .single()
+
+        const mergedConfig = {
+            ...(existing?.config || {}),
+            strategy: strategy  // Save under config.strategy
+        }
+
         const { error } = await supabase
             .from('agent_control')
             .upsert({
                 id: 1,
-                config: strategy,
+                config: mergedConfig,
                 updated_at: new Date().toISOString()
             })
         if (error) throw error;
     },
 
-    async getStrategy(): Promise<{ niche: string; emailSubject: string; status: string } | null> {
+    async getStrategy(): Promise<{ niche: string; emailSubject: string } | null> {
         const { data } = await supabase
             .from('agent_control')
             .select('config')
             .eq('id', 1)
             .single()
-        return data?.config || null
+        // Read from config.strategy (new) or fall back to top-level (legacy)
+        return data?.config?.strategy || (data?.config?.niche ? data.config : null)
     }
 }

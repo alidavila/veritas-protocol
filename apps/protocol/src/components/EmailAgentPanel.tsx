@@ -19,6 +19,8 @@ interface EmailDraft {
         geo_score?: number
         sent_at?: string
         resend_id?: string
+        sequence_num?: number
+        sequence_type?: 'DIAGNOSTIC' | 'CONSEQUENCE' | 'MICRO_OFFER'
     }
     created_at: string
 }
@@ -526,6 +528,14 @@ export function EmailAgentPanel() {
                                     <div className="min-w-0 flex-1">
                                         <div className="flex items-center gap-2">
                                             <span className="text-sm font-medium text-white truncate">{draft.details.target_domain}</span>
+                                            {draft.details.sequence_num && (
+                                                <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${draft.details.sequence_num === 1 ? 'text-cyan-400 bg-cyan-500/10' :
+                                                        draft.details.sequence_num === 2 ? 'text-orange-400 bg-orange-500/10' :
+                                                            'text-pink-400 bg-pink-500/10'
+                                                    }`}>
+                                                    #{draft.details.sequence_num}
+                                                </span>
+                                            )}
                                             {draft.details.geo_score && (
                                                 <span className="text-[10px] font-mono text-zinc-500">GEO:{draft.details.geo_score}</span>
                                             )}
