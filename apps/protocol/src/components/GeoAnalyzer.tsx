@@ -167,11 +167,13 @@ export function GeoAnalyzer({ onComplete }: { onComplete: (url: string) => void 
 
                     <div className="bg-black p-4 rounded-lg font-mono text-[10px] text-zinc-300 border border-zinc-800 relative">
                         <div className="text-emerald-500 selection:bg-emerald-500/30">
-                            &lt;script src="https://cdn.veritas.protocol/node.js"&gt;&lt;/script&gt;<br />
-                            &lt;veritas-paywall wallet="0x123...abc" rate="0.002" /&gt;
+                            &lt;script src="https://veritas-protocol-app.vercel.app/gatekeeper.js"<br />
+                            &nbsp;&nbsp;data-veritas-id="your-id"<br />
+                            &nbsp;&nbsp;data-wallet="0x..."<br />
+                            &nbsp;&nbsp;data-rate="0.002"&gt;&lt;/script&gt;
                         </div>
                         <button
-                            onClick={() => { navigator.clipboard.writeText('<script src="https://cdn.veritas.protocol/node.js"></script>'); alert("Copiado al portapapeles") }}
+                            onClick={() => { navigator.clipboard.writeText('<script src="https://veritas-protocol-app.vercel.app/gatekeeper.js" data-veritas-id="client-001" data-wallet="0x4d2B70d358C5DA9c4fC6e8Ce743Ed67d55C19099" data-rate="0.002"></script>'); alert("Copiado al portapapeles") }}
                             className="absolute top-2 right-2 px-2 py-1 bg-zinc-800 hover:bg-zinc-700 rounded text-xs text-white transition-colors"
                         >
                             COPY

@@ -1,11 +1,12 @@
 // Dashboard uses agentsService & useVeritasState for data
 
 import { Helmet } from 'react-helmet-async'
+import { askAssistant } from '../lib/gemini'
 import {
     Users, Activity, LogOut, Wallet, Globe,
     Play, Square, Settings, Mail,
     MessageSquare, DollarSign, Megaphone,
-    Save, RefreshCw, PlusCircle
+    Save, RefreshCw, PlusCircle, Send, Bot
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
@@ -39,6 +40,11 @@ export function DashboardPage() {
     })
     const [isEditingStrategy, setIsEditingStrategy] = useState(false)
     const [savingStrategy, setSavingStrategy] = useState(false)
+
+    // CEO Assistant State
+    const [assistantInput, setAssistantInput] = useState('')
+    const [assistantResponse, setAssistantResponse] = useState('')
+    const [assistantLoading, setAssistantLoading] = useState(false)
 
     useEffect(() => {
         agentsService.getStrategy().then(s => {
@@ -370,6 +376,74 @@ export function DashboardPage() {
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+                    </section>
+
+                    {/* 5. CEO ASSISTANT */}
+                    <section>
+                        <h2 className="text-sm font-bold text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <Bot className="w-4 h-4" />
+                            {t('dashboard.assistantTitle', 'Asistente IA del CEO')}
+                            <span className="w-full h-px bg-zinc-900"></span>
+                        </h2>
+                        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-4">
+                            {assistantResponse && (
+                                <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4">
+                                    <div className="flex items-start gap-3">
+                                        <Bot className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                                        <div className="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed">{assistantResponse}</div>
+                                    </div>
+                                </div>
+                            )}
+                            <form
+                                onSubmit={async (e) => {
+                                    e.preventDefault()
+                                    if (!assistantInput.trim() || assistantLoading) return
+                                    setAssistantLoading(true)
+                                    setAssistantResponse('')
+                                    try {
+                                        const lang = (t('lang', 'es') === 'en' ? 'en' : 'es') as 'es' | 'en'
+                                        const response = await askAssistant(assistantInput, {
+                                            totalEvents: stats.leads + stats.emails,
+                                            leadsFound: stats.leads,
+                                            alertsTriggered: 0,
+                                            fundsAllocated: treasury,
+                                            systemStatus: 'running',
+                                            recentLogs: signals.map(s => ({
+                                                agent_id: s.agent,
+                                                action: s.log
+                                            }))
+                                        }, lang)
+                                        setAssistantResponse(response)
+                                    } catch (err) {
+                                        setAssistantResponse('Error al conectar con el asistente.')
+                                    } finally {
+                                        setAssistantLoading(false)
+                                        setAssistantInput('')
+                                    }
+                                }}
+                                className="flex gap-3"
+                            >
+                                <input
+                                    type="text"
+                                    value={assistantInput}
+                                    onChange={(e) => setAssistantInput(e.target.value)}
+                                    placeholder={t('dashboard.assistantPlaceholder', '¿Qué quieres saber sobre tu operación?')}
+                                    className="flex-1 bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:border-emerald-500 outline-none placeholder:text-zinc-600"
+                                    disabled={assistantLoading}
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={assistantLoading || !assistantInput.trim()}
+                                    className="px-5 py-3 bg-emerald-500 text-black font-bold rounded-xl hover:bg-emerald-400 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                >
+                                    {assistantLoading ? (
+                                        <RefreshCw className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <Send className="w-4 h-4" />
+                                    )}
+                                </button>
+                            </form>
                         </div>
                     </section>
                 </div>
