@@ -5,7 +5,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { LoginPage } from './pages/Login'
 import { BroadcastPage } from './pages/BroadcastPage'
 import { DashboardPage } from './pages/Dashboard'
-import { AdminDashboardPage } from './pages/AdminDashboard'
 import { useAuth } from './contexts/AuthContext'
 
 // --- LAZY LOADED COMPONENTS ---
@@ -24,23 +23,6 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
     if (loading) return <LoadingFallback />
     if (!user) return <Navigate to="/login" replace />
-
-    return children
-}
-
-const AdminRoute = ({ children }: { children: JSX.Element }) => {
-    const { user, loading } = useAuth()
-    const adminEmail = import.meta.env.VITE_ADMIN_EMAIL
-
-    if (loading) return <LoadingFallback />
-
-    // 1. Must be logged in
-    if (!user) return <Navigate to="/login" replace />
-
-    // 2. Must be the Admin
-    if (user.email !== adminEmail) {
-        return <Navigate to="/dashboard" replace />
-    }
 
     return children
 }
@@ -86,7 +68,7 @@ function App() {
                         <Route path="/" element={<VeritasResendLanding />} />
                         <Route path="/login" element={<LoginPage />} />
 
-                        {/* USER / OPERATOR VIEW */}
+                        {/* MAIN DASHBOARD — Admin sees everything, users see their view */}
                         <Route
                             path="/dashboard"
                             element={
@@ -106,15 +88,8 @@ function App() {
                             }
                         />
 
-                        {/* COMMANDER / ADMIN VIEW */}
-                        <Route
-                            path="/admin"
-                            element={
-                                <AdminRoute>
-                                    <AdminDashboardPage />
-                                </AdminRoute>
-                            }
-                        />
+                        {/* /admin redirects to /dashboard (merged) */}
+                        <Route path="/admin" element={<Navigate to="/dashboard" replace />} />
 
                         <Route path="/hq" element={<VeritasHQ onExit={() => window.location.href = '/'} />} />
 

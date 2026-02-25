@@ -1,24 +1,65 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowRight, ShieldCheck, Mail, AlertCircle } from 'lucide-react'
+import { ArrowRight, ShieldCheck, Mail, AlertCircle, Lock, Eye, EyeOff } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { useAuth } from '../contexts/AuthContext'
 
 export function LoginPage() {
     const navigate = useNavigate()
-    const { signInWithGoogle, signInWithMagicLink, user } = useAuth()
+    const { signInWithGoogle, signInWithMagicLink, signInWithPassword, signUp, user } = useAuth()
     const [loading, setLoading] = useState(false)
     const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [showPassword, setShowPassword] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [mode, setMode] = useState<'login' | 'signup' | 'magiclink'>('login')
     const [sent, setSent] = useState(false)
 
     // Redirect if already logged in
     if (user) {
-        const adminEmail = import.meta.env.VITE_ADMIN_EMAIL
-        const isAdmin = user.email === adminEmail
-        navigate(isAdmin ? '/admin' : '/dashboard')
+        navigate('/dashboard')
         return null
+    }
+
+    const handlePasswordLogin = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setLoading(true)
+        setError(null)
+        try {
+            await signInWithPassword(email, password)
+            navigate('/dashboard')
+        } catch (err: any) {
+            if (err.message?.includes('Invalid login credentials')) {
+                setError('Email o contraseña incorrectos')
+            } else {
+                setError(err.message || 'Error al iniciar sesión')
+            }
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleSignUp = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (password.length < 6) {
+            setError('La contraseña debe tener al menos 6 caracteres')
+            return
+        }
+        setLoading(true)
+        setError(null)
+        try {
+            await signUp(email, password)
+            setSent(true) // Show "check your email" for verification
+        } catch (err: any) {
+            if (err.message?.includes('already registered')) {
+                setError('Este email ya está registrado. Intenta iniciar sesión.')
+            } else {
+                setError(err.message || 'Error al registrar')
+            }
+        } finally {
+            setLoading(false)
+        }
     }
 
     const handleMagicLink = async (e: React.FormEvent) => {
@@ -41,11 +82,10 @@ export function LoginPage() {
         try {
             await signInWithGoogle()
         } catch (err: any) {
-            console.error(err)
-            if (err.message?.includes('provider is not enabled') || err.msg?.includes('provider is not enabled')) {
-                setError("Error: Google Auth no está habilitado en tu proyecto Supabase. Ve a Authentication > Providers y actívalo.")
+            if (err.message?.includes('provider is not enabled')) {
+                setError("Google Auth no está habilitado en Supabase.")
             } else {
-                setError(err.message || err.msg || "Error with Google Auth")
+                setError(err.message || "Error with Google Auth")
             }
             setLoading(false)
         }
@@ -54,7 +94,7 @@ export function LoginPage() {
     return (
         <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 relative overflow-hidden">
             <Helmet>
-                <title>Login | Veritas Protocol</title>
+                <title>{mode === 'signup' ? 'Sign Up' : 'Login'} | Veritas Protocol</title>
             </Helmet>
 
             {/* Background */}
@@ -69,7 +109,9 @@ export function LoginPage() {
                         </div>
                     </Link>
                     <h1 className="text-3xl font-bold tracking-tight mb-2">Veritas Console</h1>
-                    <p className="text-zinc-500">Acceso seguro a tu infraestructura de agentes.</p>
+                    <p className="text-zinc-500">
+                        {mode === 'signup' ? 'Crea tu cuenta para desplegar agentes.' : 'Acceso seguro a tu infraestructura.'}
+                    </p>
                 </div>
 
                 <motion.div
@@ -91,18 +133,18 @@ export function LoginPage() {
                             </div>
                             <h3 className="text-xl font-bold text-white mb-2">Revisa tu Email</h3>
                             <p className="text-zinc-400 text-sm mb-6">
-                                Hemos enviado un enlace mágico a <strong>{email}</strong>. <br />
-                                Haz click para entrar sin contraseña.
+                                {mode === 'signup'
+                                    ? <>Hemos enviado un enlace de verificación a <strong>{email}</strong>. Confírmalo para activar tu cuenta.</>
+                                    : <>Hemos enviado un enlace mágico a <strong>{email}</strong>. Haz click para entrar.</>
+                                }
                             </p>
-                            <button
-                                onClick={() => setSent(false)}
-                                className="text-emerald-500 text-sm hover:underline"
-                            >
-                                Usar otro correo
+                            <button onClick={() => { setSent(false); setMode('login') }} className="text-emerald-500 text-sm hover:underline">
+                                Volver al login
                             </button>
                         </div>
                     ) : (
                         <div className="space-y-6">
+                            {/* Google */}
                             <button
                                 onClick={handleGoogle}
                                 disabled={loading}
@@ -117,40 +159,123 @@ export function LoginPage() {
                                     <div className="w-full border-t border-zinc-800" />
                                 </div>
                                 <div className="relative flex justify-center text-xs">
-                                    <span className="bg-black px-2 text-zinc-600 font-mono upper">O usa tu email</span>
+                                    <span className="bg-zinc-900/50 px-3 text-zinc-600 font-mono">O con email</span>
                                 </div>
                             </div>
 
-                            <form onSubmit={handleMagicLink} className="space-y-4">
-                                <div>
-                                    <label className="block text-xs font-mono uppercase text-zinc-500 mb-2">Email Corporativo</label>
-                                    <div className="relative">
-                                        <Mail className="absolute left-3 top-3.5 w-5 h-5 text-zinc-600" />
-                                        <input
-                                            type="email"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            placeholder="tu@empresa.com"
-                                            className="w-full bg-black/50 border border-zinc-700 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors placeholder:text-zinc-700"
-                                            required
-                                        />
+                            {/* Password Login / Sign Up */}
+                            {(mode === 'login' || mode === 'signup') && (
+                                <form onSubmit={mode === 'login' ? handlePasswordLogin : handleSignUp} className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-mono uppercase text-zinc-500 mb-2">Email</label>
+                                        <div className="relative">
+                                            <Mail className="absolute left-3 top-3.5 w-5 h-5 text-zinc-600" />
+                                            <input
+                                                type="email"
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                placeholder="tu@empresa.com"
+                                                className="w-full bg-black/50 border border-zinc-700 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors placeholder:text-zinc-700"
+                                                required
+                                            />
+                                        </div>
                                     </div>
-                                </div>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="w-full bg-emerald-600/10 border border-emerald-500/50 text-emerald-500 font-bold h-12 rounded-xl hover:bg-emerald-500 hover:text-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
-                                >
-                                    {loading ? (
-                                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                                    ) : (
-                                        <>
-                                            Enviar Magic Link
-                                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                        </>
-                                    )}
-                                </button>
-                            </form>
+                                    <div>
+                                        <label className="block text-xs font-mono uppercase text-zinc-500 mb-2">Contraseña</label>
+                                        <div className="relative">
+                                            <Lock className="absolute left-3 top-3.5 w-5 h-5 text-zinc-600" />
+                                            <input
+                                                type={showPassword ? 'text' : 'password'}
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                placeholder="••••••••"
+                                                className="w-full bg-black/50 border border-zinc-700 rounded-xl pl-10 pr-12 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors placeholder:text-zinc-700"
+                                                required
+                                                minLength={6}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-3 top-3.5 text-zinc-600 hover:text-zinc-400"
+                                            >
+                                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full bg-emerald-600 text-white font-bold h-12 rounded-xl hover:bg-emerald-500 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg"
+                                    >
+                                        {loading ? (
+                                            <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                        ) : (
+                                            <>
+                                                {mode === 'signup' ? 'Crear Cuenta' : 'Iniciar Sesión'}
+                                                <ArrowRight className="w-4 h-4" />
+                                            </>
+                                        )}
+                                    </button>
+                                </form>
+                            )}
+
+                            {/* Magic Link */}
+                            {mode === 'magiclink' && (
+                                <form onSubmit={handleMagicLink} className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-mono uppercase text-zinc-500 mb-2">Email</label>
+                                        <div className="relative">
+                                            <Mail className="absolute left-3 top-3.5 w-5 h-5 text-zinc-600" />
+                                            <input
+                                                type="email"
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                placeholder="tu@empresa.com"
+                                                className="w-full bg-black/50 border border-zinc-700 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors placeholder:text-zinc-700"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full bg-emerald-600/10 border border-emerald-500/50 text-emerald-500 font-bold h-12 rounded-xl hover:bg-emerald-500 hover:text-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 group"
+                                    >
+                                        {loading ? (
+                                            <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                        ) : (
+                                            <>
+                                                Enviar Magic Link
+                                                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                            </>
+                                        )}
+                                    </button>
+                                </form>
+                            )}
+
+                            {/* Mode Switchers */}
+                            <div className="flex flex-col items-center gap-2 text-xs text-zinc-500">
+                                {mode === 'login' && (
+                                    <>
+                                        <button onClick={() => { setMode('signup'); setError(null) }} className="hover:text-emerald-400 transition-colors">
+                                            ¿No tienes cuenta? <span className="text-emerald-500 font-semibold">Regístrate</span>
+                                        </button>
+                                        <button onClick={() => { setMode('magiclink'); setError(null) }} className="hover:text-zinc-300 transition-colors">
+                                            Entrar con Magic Link (sin contraseña)
+                                        </button>
+                                    </>
+                                )}
+                                {mode === 'signup' && (
+                                    <button onClick={() => { setMode('login'); setError(null) }} className="hover:text-emerald-400 transition-colors">
+                                        ¿Ya tienes cuenta? <span className="text-emerald-500 font-semibold">Inicia sesión</span>
+                                    </button>
+                                )}
+                                {mode === 'magiclink' && (
+                                    <button onClick={() => { setMode('login'); setError(null) }} className="hover:text-emerald-400 transition-colors">
+                                        Volver al login con contraseña
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     )}
 
