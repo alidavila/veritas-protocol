@@ -16,6 +16,7 @@ export interface Agent {
     last_seen?: string
     wallet_balance?: number
     current_task?: string
+    did?: string
 }
 
 export const agentsService = {
@@ -192,6 +193,22 @@ export const agentsService = {
                 status: 'pending'
             }]);
         if (error) throw error;
+    },
+
+    async controlAgent(id: string, action: 'start' | 'stop') {
+        const status = action === 'start' ? 'active' : 'paused'
+        return this.updateAgentStatus(id, status)
+    },
+
+    async deployInitialFleet() {
+        const defaultAgents = [
+            { name: 'The Gatekeeper', type: 'support' as const, description: 'Detects AI bots and manages access control' },
+            { name: 'Email Marketer', type: 'sales' as const, description: 'Generates and sends outbound emails' },
+            { name: 'Lead Scraper', type: 'scraper' as const, description: 'Discovers and scores new leads' },
+        ]
+        for (const agent of defaultAgents) {
+            await this.createAgent(agent)
+        }
     },
 
     async saveStrategy(strategy: { niche: string; emailSubject: string }) {

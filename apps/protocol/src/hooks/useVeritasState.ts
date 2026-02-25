@@ -21,14 +21,28 @@ export interface Transaction {
     note: string;
 }
 
+export interface Signal {
+    time: string;
+    agent: string;
+    log: string;
+    cost: string;
+}
+
+export interface Stats {
+    leads: number;
+    emails: number;
+    clicks: number;
+}
+
 export function useVeritasState() {
     const [ledger, setLedger] = useState<Transaction[]>([]);
     const [treasury, setTreasury] = useState(0);
+    const [stats, setStats] = useState<Stats>({ leads: 0, emails: 0, clicks: 0 });
+    const [signals, setSignals] = useState<Signal[]>([]);
 
     // Initial Fetch & Subscription
     useEffect(() => {
-        fetchLedger();
-        fetchBalance();
+        fetchAll();
 
         // Realtime Subscription
         const channel = supabase
@@ -40,6 +54,7 @@ export function useVeritasState() {
                     const newTx = mapSupabaseToTx(payload.new);
                     setLedger(prev => [newTx, ...prev]);
                     fetchBalance(); // Update balance on new tx
+                    fetchStats(); // Update stats on new tx
                 }
             )
             .subscribe();
@@ -48,6 +63,12 @@ export function useVeritasState() {
             supabase.removeChannel(channel);
         };
     }, []);
+
+    const fetchAll = () => {
+        fetchLedger();
+        fetchBalance();
+        fetchStats();
+    };
 
     const fetchLedger = async () => {
         const { data, error } = await supabase
@@ -60,6 +81,43 @@ export function useVeritasState() {
         if (data) {
             console.log(`[useVeritasState] Fetched ${data.length} transactions from Supabase`);
             setLedger(data.map(mapSupabaseToTx));
+            // Build signals from ledger
+            setSignals(data.slice(0, 10).map((row: any) => ({
+                time: new Date(row.created_at).toLocaleTimeString(),
+                agent: row.agent_id || 'system',
+                log: row.action,
+                cost: `${parseFloat(row.amount || 0).toFixed(6)} ETH`
+            })));
+        }
+    };
+
+    const fetchStats = async () => {
+        try {
+            // Count leads
+            const { count: leadCount } = await supabase
+                .from('agent_ledger')
+                .select('*', { count: 'exact', head: true })
+                .eq('action', 'LEAD_FOUND');
+
+            // Count sent emails
+            const { count: emailCount } = await supabase
+                .from('agent_ledger')
+                .select('*', { count: 'exact', head: true })
+                .in('action', ['EMAIL_SENT', 'EMAIL_QUEUED']);
+
+            // Count clicks/responses
+            const { count: clickCount } = await supabase
+                .from('agent_ledger')
+                .select('*', { count: 'exact', head: true })
+                .in('action', ['CLICK', 'RESPONSE', 'REPLY']);
+
+            setStats({
+                leads: leadCount || 0,
+                emails: emailCount || 0,
+                clicks: clickCount || 0
+            });
+        } catch (e) {
+            console.error('Error fetching stats:', e);
         }
     };
 
@@ -84,7 +142,7 @@ export function useVeritasState() {
         }
     };
 
-    return { ledger, treasury };
+    return { ledger, treasury, stats, signals, fetchStats };
 }
 
 function mapSupabaseToTx(row: any): Transaction {

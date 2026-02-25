@@ -1,9 +1,9 @@
-import { supabase } from '../lib/supabase'
+// Dashboard uses agentsService & useVeritasState for data
 
 import { Helmet } from 'react-helmet-async'
 import {
     Users, Activity, LogOut, Wallet, Globe,
-    Play, Square, Settings, Target, Mail,
+    Play, Square, Settings, Mail,
     MessageSquare, DollarSign, Megaphone,
     Save, RefreshCw, PlusCircle
 } from 'lucide-react'
@@ -27,7 +27,7 @@ const THEME = {
 
 export function DashboardPage() {
     const { signOut } = useAuth()
-    const { stats, signals, treasury, fetchStats } = useVeritasState()
+    const { stats, signals, treasury, fetchStats: _fetchStats } = useVeritasState()
     const { t } = useTranslation()
     const [agents, setAgents] = useState<Agent[]>([])
     const [loading, setLoading] = useState(true)
