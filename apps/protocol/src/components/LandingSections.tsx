@@ -1,9 +1,11 @@
 import { useRef, useState } from 'react'
-import { Zap, Shield, ArrowDown, Activity, Lock, Download, Globe, Terminal, Copy, CheckCircle } from 'lucide-react'
+import { Zap, Shield, ArrowDown, Activity, Lock, Download, Globe, Terminal, Copy, CheckCircle, PlayCircle, X } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { useBotDetection } from '../hooks/useBotDetection'
 
 export function LandingSections({ theme, lang = 'es' }: { theme: 'dark' | 'light', lang?: 'es' | 'en' }) {
     const [copied, setCopied] = useState(false)
+    const [showWpTutorial, setShowWpTutorial] = useState(false)
     const isDark = theme === 'dark'
 
     const t = {
@@ -356,20 +358,28 @@ export function LandingSections({ theme, lang = 'es' }: { theme: 'dark' | 'light
                                 <div className={`p-3 rounded-xl text-center ${isDark ? 'bg-black border border-zinc-800' : 'bg-zinc-100 border border-zinc-200'}`}>
                                     <span className={`font-mono text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>veritas-gatekeeper.zip</span>
                                 </div>
-                                <button
-                                    onClick={() => {
-                                        const link = document.createElement('a');
-                                        link.href = '/veritas-gatekeeper.zip';
-                                        link.download = 'veritas-gatekeeper.zip';
-                                        link.target = '_blank';
-                                        document.body.appendChild(link);
-                                        link.click();
-                                        document.body.removeChild(link);
-                                    }}
-                                    className={`w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${isDark ? 'bg-white text-black hover:bg-zinc-200' : 'bg-black text-white hover:bg-zinc-800'}`}
-                                >
-                                    <Download className="w-4 h-4" /> Descargar Gratis
-                                </button>
+                                <div className="mt-auto flex flex-col gap-2">
+                                    <button
+                                        onClick={() => {
+                                            const link = document.createElement('a');
+                                            link.href = '/veritas-gatekeeper.zip';
+                                            link.download = 'veritas-gatekeeper.zip';
+                                            link.target = '_blank';
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
+                                        }}
+                                        className={`w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${isDark ? 'bg-white text-black hover:bg-zinc-200' : 'bg-black text-white hover:bg-zinc-800'}`}
+                                    >
+                                        <Download className="w-4 h-4" /> Descargar Gratis
+                                    </button>
+                                    <button
+                                        onClick={() => setShowWpTutorial(true)}
+                                        className={`w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 border ${isDark ? 'border-blue-500/30 text-blue-400 hover:bg-blue-500/10' : 'border-blue-300 text-blue-600 hover:bg-blue-50'}`}
+                                    >
+                                        <PlayCircle className="w-4 h-4" /> Tutorial de Instalación
+                                    </button>
+                                </div>
                             </div>
                         </SpotlightCard>
 
@@ -401,6 +411,77 @@ export function LandingSections({ theme, lang = 'es' }: { theme: 'dark' | 'light
                 </h3>
             </div>
 
+            {/* WP Tutorial Modal */}
+            {showWpTutorial && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className={`relative w-full max-w-lg border rounded-3xl shadow-2xl overflow-hidden ${isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200'}`}
+                    >
+                        <button
+                            onClick={() => setShowWpTutorial(false)}
+                            className={`absolute top-4 right-4 transition-colors p-2 ${isDark ? 'text-zinc-500 hover:text-white' : 'text-zinc-400 hover:text-black'}`}
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
+                        <div className={`p-8 border-b ${isDark ? 'border-zinc-800/50 bg-zinc-900/50' : 'border-zinc-100 bg-zinc-50/50'}`}>
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className={`p-3 rounded-2xl flex items-center justify-center ${isDark ? 'bg-blue-500/10' : 'bg-blue-50'}`}>
+                                    <PlayCircle className="w-6 h-6 text-blue-500" />
+                                </div>
+                                <div>
+                                    <h3 className={`text-2xl font-bold mb-1 ${isDark ? 'text-white' : 'text-zinc-900'}`}>Guía de Instalación</h3>
+                                    <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Protege tu WordPress en 2 minutos.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-8 space-y-6">
+                            <div className="flex gap-4">
+                                <span className={`flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold border ${isDark ? 'bg-zinc-800/80 text-zinc-300 border-zinc-700/50' : 'bg-zinc-100 text-zinc-600 border-zinc-200'}`}>1</span>
+                                <div className="pt-1.5">
+                                    <p className={`text-sm leading-relaxed ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>Descarga el archivo <span className={`font-mono px-1 py-0.5 rounded text-xs border ${isDark ? 'text-white bg-zinc-800 border-zinc-700' : 'text-black bg-zinc-100 border-zinc-200'}`}>veritas-gatekeeper.zip</span> usando el botón principal.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <span className={`flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold border ${isDark ? 'bg-zinc-800/80 text-zinc-300 border-zinc-700/50' : 'bg-zinc-100 text-zinc-600 border-zinc-200'}`}>2</span>
+                                <div className="pt-1.5">
+                                    <p className={`text-sm leading-relaxed ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>Ve al panel de administración de tu WordPress en <span className={`font-mono text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>/wp-admin</span>.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <span className={`flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold border ${isDark ? 'bg-zinc-800/80 text-zinc-300 border-zinc-700/50' : 'bg-zinc-100 text-zinc-600 border-zinc-200'}`}>3</span>
+                                <div className="pt-1.5">
+                                    <p className={`text-sm leading-relaxed ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>En el menú lateral, selecciona <strong className={isDark ? 'text-white font-medium' : 'text-black font-medium'}>Plugins</strong> y luego haz clic en <strong className={isDark ? 'text-white font-medium' : 'text-black font-medium'}>Añadir nuevo plugin</strong>.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <span className={`flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold border ${isDark ? 'bg-zinc-800/80 text-zinc-300 border-zinc-700/50' : 'bg-zinc-100 text-zinc-600 border-zinc-200'}`}>4</span>
+                                <div className="pt-1.5">
+                                    <p className={`text-sm leading-relaxed ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>Haz clic en <strong className={isDark ? 'text-white font-medium' : 'text-black font-medium'}>Subir plugin</strong> (arriba) y sube el archivo descargado.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <span className="flex-shrink-0 w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-sm font-bold border border-emerald-500/20"><Check className="w-4 h-4" /></span>
+                                <div className="pt-1.5">
+                                    <p className={`text-sm font-medium leading-relaxed ${isDark ? 'text-emerald-100' : 'text-emerald-800'}`}>¡Haz clic en <strong className={isDark ? 'text-white' : 'text-black'}>Activar plugin</strong> y listo!</p>
+                                </div>
+                            </div>
+
+                            <div className={`mt-8 p-4 rounded-2xl flex items-start gap-3 border ${isDark ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-100'}`}>
+                                <PlayCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                                <div className={`text-sm ${isDark ? 'text-blue-200' : 'text-blue-800'}`}>
+                                    <p className="font-bold mb-1">Video Tutorial Mágico (Próximamente)</p>
+                                    <p className={`${isDark ? 'opacity-80' : 'opacity-90'} leading-relaxed`}>Muy pronto aquí habrá un video reproducido con un clic que te mostrará cómo hacerlo de forma más visual.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
         </div>
     )
 }

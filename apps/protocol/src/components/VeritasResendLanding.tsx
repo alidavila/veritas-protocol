@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { ArrowRight, Check, Code2, Lock, Shield, Terminal, Zap, Wallet, Fingerprint, Copy, Globe, Download, CheckCircle } from 'lucide-react'
+import { ArrowRight, Check, Code2, Lock, Shield, Terminal, Zap, Wallet, Fingerprint, Copy, Globe, Download, CheckCircle, PlayCircle, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { clsx, type ClassValue } from 'clsx'
@@ -436,6 +436,7 @@ function FaqSection() {
 
 function GatekeeperPromoSection() {
     const [copied, setCopied] = useState(false)
+    const [showWpTutorial, setShowWpTutorial] = useState(false)
 
     return (
         <section className="py-32 px-6 relative border-t border-white/5 bg-zinc-950">
@@ -491,7 +492,7 @@ function GatekeeperPromoSection() {
                         <div className="p-3 mb-4 rounded-xl text-center bg-black border border-zinc-800 h-20 flex items-center justify-center">
                             <span className="font-mono text-xs text-zinc-400">veritas-gatekeeper.zip</span>
                         </div>
-                        <div className="mt-auto">
+                        <div className="mt-auto flex flex-col gap-2">
                             <button
                                 onClick={() => {
                                     const link = document.createElement('a');
@@ -505,6 +506,12 @@ function GatekeeperPromoSection() {
                                 className="w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 bg-white text-black hover:bg-zinc-200"
                             >
                                 <Download className="w-4 h-4" /> Descargar Gratis
+                            </button>
+                            <button
+                                onClick={() => setShowWpTutorial(true)}
+                                className="w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 border border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+                            >
+                                <PlayCircle className="w-4 h-4" /> Tutorial de Instalación
                             </button>
                         </div>
                     </div>
@@ -527,6 +534,78 @@ function GatekeeperPromoSection() {
                     </div>
                 </div>
             </div>
+
+            {/* WP Tutorial Modal */}
+            {showWpTutorial && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="relative w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-3xl shadow-2xl overflow-hidden"
+                    >
+                        <button
+                            onClick={() => setShowWpTutorial(false)}
+                            className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors p-2"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
+                        <div className="p-8 border-b border-zinc-800/50 bg-zinc-900/50">
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className="p-3 bg-blue-500/10 rounded-2xl flex items-center justify-center">
+                                    <PlayCircle className="w-6 h-6 text-blue-500" />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-bold text-white mb-1">Guía de Instalación</h3>
+                                    <p className="text-sm text-zinc-400">Protege tu WordPress en 2 minutos.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-8 space-y-6">
+                            <div className="flex gap-4">
+                                <span className="flex-shrink-0 w-8 h-8 rounded-xl bg-zinc-800/80 text-zinc-300 flex items-center justify-center text-sm font-bold border border-zinc-700/50">1</span>
+                                <div className="pt-1.5">
+                                    <p className="text-sm text-zinc-300 leading-relaxed">Descarga el archivo <span className="text-white font-mono bg-zinc-800 px-1 py-0.5 rounded text-xs border border-zinc-700">veritas-gatekeeper.zip</span> usando el botón principal.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <span className="flex-shrink-0 w-8 h-8 rounded-xl bg-zinc-800/80 text-zinc-300 flex items-center justify-center text-sm font-bold border border-zinc-700/50">2</span>
+                                <div className="pt-1.5">
+                                    <p className="text-sm text-zinc-300 leading-relaxed">Ve al panel de administración de tu WordPress en <span className="text-zinc-400 font-mono text-xs">/wp-admin</span>.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <span className="flex-shrink-0 w-8 h-8 rounded-xl bg-zinc-800/80 text-zinc-300 flex items-center justify-center text-sm font-bold border border-zinc-700/50">3</span>
+                                <div className="pt-1.5">
+                                    <p className="text-sm text-zinc-300 leading-relaxed">En el menú lateral, selecciona <strong className="text-white font-medium">Plugins</strong> y luego haz clic en <strong className="text-white font-medium">Añadir nuevo plugin</strong>.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <span className="flex-shrink-0 w-8 h-8 rounded-xl bg-zinc-800/80 text-zinc-300 flex items-center justify-center text-sm font-bold border border-zinc-700/50">4</span>
+                                <div className="pt-1.5">
+                                    <p className="text-sm text-zinc-300 leading-relaxed">Haz clic en <strong className="text-white font-medium">Subir plugin</strong> (arriba) y sube el archivo descargado.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <span className="flex-shrink-0 w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-sm font-bold border border-emerald-500/20"><Check className="w-4 h-4" /></span>
+                                <div className="pt-1.5">
+                                    <p className="text-sm text-emerald-100 font-medium leading-relaxed">¡Haz clic en <strong className="text-white">Activar plugin</strong> y listo!</p>
+                                </div>
+                            </div>
+
+                            <div className="mt-8 p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl flex items-start gap-3">
+                                <PlayCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                                <div className="text-sm text-blue-200">
+                                    <p className="font-bold mb-1">Video Tutorial Mágico (Próximamente)</p>
+                                    <p className="opacity-80 leading-relaxed">Muy pronto aquí habrá un video reproducido con un clic que te mostrará cómo hacerlo de forma más visual.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
         </section>
     )
 }
