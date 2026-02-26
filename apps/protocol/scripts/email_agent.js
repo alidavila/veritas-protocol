@@ -269,7 +269,7 @@ async function runHunterLoop() {
             target_email: targetEmail,
             subject: subject,
             body: body,
-            status: 'WAITING_APPROVAL',
+            status: isInbound ? 'APPROVED' : 'WAITING_APPROVAL', // Auto-approve inbound requests from the Honeytrap
             geo_score: geoScore,
             sequence_num: sequenceNum,
             sequence_type: sequence.type
@@ -302,10 +302,12 @@ async function runSenderLoop() {
         try {
             if (!resend) throw new Error("No Resend Key");
 
-            const SAFE_DESTINATION = 'delivered@resend.dev';
+            // Enviar al email real que capturó el Honeytrap
+            const recipientEmail = draft.details.target_email;
+
             const data = await resend.emails.send({
-                from: 'Veritas Agents <onboarding@resend.dev>',
-                to: [SAFE_DESTINATION],
+                from: 'Veritas Protocol <onboarding@resend.dev>',
+                to: [recipientEmail],
                 subject: draft.details.subject,
                 html: draft.details.body
             });
