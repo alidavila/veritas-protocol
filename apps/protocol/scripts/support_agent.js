@@ -24,7 +24,7 @@ const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 // Model for Embeddings and Text Generation
 const embeddingModel = genAI.getGenerativeModel({ model: "embedding-001" });
-const textModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const textModel = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
 /**
  * 📥 INGEST: Adds text to the Knowledge Base

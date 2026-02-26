@@ -46,7 +46,7 @@ export async function askAssistant(question: string, context: AssistantContext, 
         console.warn('Logic file not found')
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' })
 
     const commandInstructions = `
 COMANDOS DISPONIBLES (usa estos cuando el CEO dé una ORDEN, no una pregunta):
