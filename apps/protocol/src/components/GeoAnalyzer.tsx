@@ -109,6 +109,15 @@ export function GeoAnalyzer({ onComplete }: { onComplete: (url: string) => void 
 
                 if (idx === sequence.length - 1) {
                     setAnalyzing(false)
+
+                    try {
+                        const parsed = new URL(targetUrl)
+                        if (parsed.hostname.includes('veritas') || window.location.hostname === parsed.hostname) {
+                            setResult('OPTIMIZED');
+                            return;
+                        }
+                    } catch (e) { }
+
                     setResult('INVISIBLE')
                 }
             }, accumulatedTime)
@@ -192,6 +201,40 @@ export function GeoAnalyzer({ onComplete }: { onComplete: (url: string) => void 
                     <p className="text-center text-[10px] text-zinc-500 mt-3">
                         Al hacer click, se creará tu identidad (DID) y tu billetera receptora.
                     </p>
+                </div>
+            </div>
+        )
+    }
+
+    if (result === 'OPTIMIZED') {
+        return (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="p-4 bg-emerald-500/10 border border-emerald-500/50 rounded-lg flex items-start gap-4">
+                    <ShieldAlert className="w-8 h-8 text-emerald-500 shrink-0" />
+                    <div>
+                        <h3 className="text-lg font-bold text-emerald-500 mb-1">DIAGNÓSTICO: OPTIMIZADO & PROTEGIDO</h3>
+                        <p className="text-xs text-emerald-400/80 leading-relaxed">
+                            El nodo de <b>Veritas Protocol</b> ha sido detectado con éxito. <br />
+                            Los MLLs y Crawlers no pueden leer tus datos sin ejecutar una transacción x402.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="bg-zinc-900 border border-emerald-500/30 rounded-xl p-5 relative overflow-hidden group shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+                    <h4 className="text-white font-bold mb-2 flex items-center gap-2">
+                        <Check className="w-4 h-4 text-emerald-500" />
+                        Tráfico de IA Monetizado
+                    </h4>
+                    <p className="text-zinc-400 text-xs mb-4">
+                        Tus activos digitales están monetizando consultas en tiempo real de Google-Extended, GPTBot, ClaudeBot, y Perplexity.
+                    </p>
+
+                    <button
+                        onClick={() => setResult(null)}
+                        className="w-full py-3 mt-4 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-white font-bold transition-colors"
+                    >
+                        Auditar otro dominio
+                    </button>
                 </div>
             </div>
         )
