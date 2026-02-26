@@ -49,7 +49,6 @@ export class VeritasPulse {
         try {
             const updateData = {
                 status: 'active',
-                last_seen: new Date().toISOString(),
                 ...extraData
             };
 
@@ -103,8 +102,7 @@ export class VeritasPulse {
      * Call this when the agent is stopping or crashing
      */
     async dead() {
-        if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
-        await this.pulse({ status: 'paused', last_seen: new Date().toISOString() });
+        await this.pulse({ status: 'paused' });
         console.log(`[PULSE] Agent signal lost.`);
     }
 }

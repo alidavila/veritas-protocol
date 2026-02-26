@@ -23,7 +23,7 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 // Coinbase Config
 const apiKeyName = process.env.CDP_API_KEY_NAME;
-const privateKey = process.env.CDP_API_KEY_PRIVATE_KEY?.replace(/\\n/g, '\n');
+const privateKey = process.env.CDP_API_KEY_PRIVATE?.replace(/\\n/g, '\n');
 
 if (!apiKeyName || !privateKey) {
     console.error('❌ Missing CDP Credentials. Treasurer cannot start.');
