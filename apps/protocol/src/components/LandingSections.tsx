@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react'
-import { Zap, Shield, ArrowDown, Activity, Lock } from 'lucide-react'
+import { Zap, Shield, ArrowDown, Activity, Lock, Download, Globe, Terminal, Copy, CheckCircle } from 'lucide-react'
 import { useBotDetection } from '../hooks/useBotDetection'
 
 export function LandingSections({ theme, lang = 'es' }: { theme: 'dark' | 'light', lang?: 'es' | 'en' }) {
+    const [copied, setCopied] = useState(false)
     const isDark = theme === 'dark'
 
     const t = {
@@ -61,7 +62,19 @@ export function LandingSections({ theme, lang = 'es' }: { theme: 'dark' | 'light
             case_3_desc: "Escanea vulnerabilidades y emite certificados de seguridad firmados criptográficamente.",
 
             cta_final: "¿Listo para desplegar?",
-            cta_final_sub: "Únete a la red que factura mientras duermes."
+            cta_final_sub: "Únete a la red que factura mientras duermes.",
+
+            // GATEKEEPER FREE
+            gk_badge: "100% Gratis · Sin Registro",
+            gk_title: "Protege tu Web",
+            gk_title2: "de los Bots de IA.",
+            gk_sub: "Instala el Gatekeeper en 30 segundos. Detecta GPTBot, ClaudeBot y 14 scrapers más. Cobra micropagos automáticos por acceso.",
+            gk_js_title: "Universal (Cualquier Web)",
+            gk_js_desc: "Copia y pega en tu <head>",
+            gk_wp_title: "WordPress Plugin",
+            gk_wp_desc: "Descarga e instala en 1 click",
+            gk_cli_title: "Developer CLI",
+            gk_cli_desc: "Genera tu DID desde la terminal"
         },
         en: {
             // HERO
@@ -118,7 +131,19 @@ export function LandingSections({ theme, lang = 'es' }: { theme: 'dark' | 'light
             case_3_desc: "Scans for vulnerabilities and issues cryptographically signed security certificates.",
 
             cta_final: "Ready to deploy?",
-            cta_final_sub: "Join the network that bills while you sleep."
+            cta_final_sub: "Join the network that bills while you sleep.",
+
+            // GATEKEEPER FREE
+            gk_badge: "100% Free · No Signup Required",
+            gk_title: "Protect your Website",
+            gk_title2: "from AI Bots.",
+            gk_sub: "Install the Gatekeeper in 30 seconds. Detects GPTBot, ClaudeBot and 14+ scrapers. Collect automatic micropayments for access.",
+            gk_js_title: "Universal (Any Website)",
+            gk_js_desc: "Copy & paste into your <head>",
+            gk_wp_title: "WordPress Plugin",
+            gk_wp_desc: "Download and install in 1 click",
+            gk_cli_title: "Developer CLI",
+            gk_cli_desc: "Generate your DID from terminal"
         }
     }
 
@@ -275,6 +300,88 @@ export function LandingSections({ theme, lang = 'es' }: { theme: 'dark' | 'light
                             desc={txt.case_3_desc}
                             theme={theme}
                         />
+                    </div>
+                </div>
+            </StickySection>
+
+            {/* --- SECTION 5: FREE GATEKEEPER (THE HOOK) --- */}
+            <StickySection index={5} theme={theme}>
+                <div className="space-y-12 max-w-4xl mx-auto">
+                    <div className="text-center space-y-6">
+                        <Badge theme={theme} color="green">{txt.gk_badge}</Badge>
+                        <h2 className={`text-4xl lg:text-6xl font-serif font-medium leading-tight ${isDark ? 'text-white' : 'text-zinc-900'}`}>
+                            {txt.gk_title} <br />
+                            <span className="text-emerald-500 italic">{txt.gk_title2}</span>
+                        </h2>
+                        <p className={`max-w-xl mx-auto text-lg ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                            {txt.gk_sub}
+                        </p>
+                    </div>
+
+                    {/* 3 Install Options */}
+                    <div className="grid md:grid-cols-3 gap-6">
+
+                        {/* Option 1: Universal JS */}
+                        <SpotlightCard theme={theme} className="border-emerald-500/30">
+                            <div className="p-6 space-y-4">
+                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isDark ? 'bg-emerald-500/10' : 'bg-emerald-50'}`}>
+                                    <Copy className="w-6 h-6 text-emerald-500" />
+                                </div>
+                                <h4 className={`font-bold text-lg ${isDark ? 'text-white' : 'text-zinc-900'}`}>{txt.gk_js_title}</h4>
+                                <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-zinc-600'}`}>{txt.gk_js_desc}</p>
+                                <div className={`p-3 rounded-xl font-mono text-[10px] leading-relaxed ${isDark ? 'bg-black text-emerald-400 border border-zinc-800' : 'bg-zinc-100 text-emerald-700 border border-zinc-200'}`}>
+                                    {'<script src="veritas-protocol-app.vercel.app/gatekeeper.js"></script>'}
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText('<script src="https://veritas-protocol-app.vercel.app/gatekeeper.js" data-veritas-id="public" data-wallet="0x4d2B70d358C5DA9c4fC6e8Ce743Ed67d55C19099" data-rate="0.002"></script>')
+                                        setCopied(true)
+                                        setTimeout(() => setCopied(false), 2000)
+                                    }}
+                                    className="w-full py-3 rounded-xl font-bold text-sm bg-emerald-500 text-black hover:bg-emerald-400 transition-all flex items-center justify-center gap-2"
+                                >
+                                    {copied ? <><CheckCircle className="w-4 h-4" /> Copiado!</> : <><Copy className="w-4 h-4" /> Copiar Snippet</>}
+                                </button>
+                            </div>
+                        </SpotlightCard>
+
+                        {/* Option 2: WordPress */}
+                        <SpotlightCard theme={theme}>
+                            <div className="p-6 space-y-4">
+                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isDark ? 'bg-blue-500/10' : 'bg-blue-50'}`}>
+                                    <Globe className="w-6 h-6 text-blue-500" />
+                                </div>
+                                <h4 className={`font-bold text-lg ${isDark ? 'text-white' : 'text-zinc-900'}`}>{txt.gk_wp_title}</h4>
+                                <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-zinc-600'}`}>{txt.gk_wp_desc}</p>
+                                <div className={`p-3 rounded-xl text-center ${isDark ? 'bg-black border border-zinc-800' : 'bg-zinc-100 border border-zinc-200'}`}>
+                                    <span className={`font-mono text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>veritas-gatekeeper.php</span>
+                                </div>
+                                <a
+                                    href="/veritas-gatekeeper.php"
+                                    download="veritas-gatekeeper.php"
+                                    className={`w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${isDark ? 'bg-white text-black hover:bg-zinc-200' : 'bg-black text-white hover:bg-zinc-800'}`}
+                                >
+                                    <Download className="w-4 h-4" /> Descargar Gratis
+                                </a>
+                            </div>
+                        </SpotlightCard>
+
+                        {/* Option 3: CLI */}
+                        <SpotlightCard theme={theme}>
+                            <div className="p-6 space-y-4">
+                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isDark ? 'bg-purple-500/10' : 'bg-purple-50'}`}>
+                                    <Terminal className="w-6 h-6 text-purple-500" />
+                                </div>
+                                <h4 className={`font-bold text-lg ${isDark ? 'text-white' : 'text-zinc-900'}`}>{txt.gk_cli_title}</h4>
+                                <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-zinc-600'}`}>{txt.gk_cli_desc}</p>
+                                <div className={`p-3 rounded-xl font-mono text-[10px] leading-relaxed ${isDark ? 'bg-black text-purple-400 border border-zinc-800' : 'bg-zinc-100 text-purple-700 border border-zinc-200'}`}>
+                                    <span className="opacity-40">$ </span>npx veritas-cli init
+                                </div>
+                                <div className={`w-full py-3 rounded-xl font-bold text-sm text-center ${isDark ? 'bg-zinc-800 text-zinc-300 border border-zinc-700' : 'bg-zinc-200 text-zinc-700 border border-zinc-300'}`}>
+                                    Corre en tu Terminal →
+                                </div>
+                            </div>
+                        </SpotlightCard>
                     </div>
                 </div>
             </StickySection>
