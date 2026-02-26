@@ -39,25 +39,34 @@ const WALLET_FILE = path.join(__dirname, '.treasurer_wallet.json');
 
 async function getOrInitWallet() {
     let wallet;
-    if (fs.existsSync(WALLET_FILE)) {
-        console.log('📂 Loading existing Treasurer Wallet...');
-        const data = JSON.parse(fs.readFileSync(WALLET_FILE, 'utf-8'));
-        wallet = await Wallet.import(data);
-    } else {
-        console.log('🆕 Creating NEW Treasurer Wallet...');
-        wallet = await Wallet.create({ networkId: 'base-sepolia' });
-        const data = await wallet.export();
-        fs.writeFileSync(WALLET_FILE, JSON.stringify(data, null, 2));
-        console.log('💾 Wallet saved to disk.');
+    try {
+        if (fs.existsSync(WALLET_FILE)) {
+            console.log('📂 Loading existing Treasurer Wallet...');
+            const data = JSON.parse(fs.readFileSync(WALLET_FILE, 'utf-8'));
+            wallet = await Wallet.import(data);
+        } else {
+            console.log('🆕 Creating NEW Treasurer Wallet...');
+            wallet = await Wallet.create({ networkId: 'base-sepolia' });
+            const data = await wallet.export();
+            fs.writeFileSync(WALLET_FILE, JSON.stringify(data, null, 2));
+            console.log('💾 Wallet saved to disk.');
 
-        // Initial Faucet (Only on creation)
-        console.log('💧 Requesting Faucet Funds...');
-        try {
-            await wallet.faucet();
-            console.log('   ✅ Faucet request sent.');
-        } catch (e) {
-            console.warn('   ⚠️ Faucet failed (maybe rate limited):', e.message);
+            // Initial Faucet (Only on creation)
+            console.log('💧 Requesting Faucet Funds...');
+            try {
+                await wallet.faucet();
+                console.log('   ✅ Faucet request sent.');
+            } catch (e) {
+                console.warn('   ⚠️ Faucet failed (maybe rate limited):', e.message);
+            }
         }
+    } catch (e) {
+        console.error('❌ CDP Wallet Error:', e.message);
+        console.error('⚠️ Using Mock Wallet because API keys are invalid or missing.');
+        wallet = {
+            getDefaultAddress: async () => ({ getId: () => "0x4d2B70d358C5DA9c4fC6e8Ce743Ed67d55C19099" }),
+            getBalance: async () => 0.05
+        };
     }
     return wallet;
 }

@@ -220,13 +220,15 @@ async function runScanRound(targets) {
 // ============================================================
 async function main() {
     // Check system status
-    const { data: control } = await supabase
-        .from('agent_control')
+    const { data: agent } = await supabase
+        .from('agents')
         .select('status, config')
+        .eq('type', 'scraper')
+        .limit(1)
         .single();
 
-    if (control?.status !== 'running' || !control?.config?.hunter?.enabled) {
-        console.log('⚠️  System STOPPED or Hunter DISBALED from the dashboard.');
+    if (agent?.status !== 'active') {
+        console.log('⚠️  System STOPPED or Hunter DISABLED from the dashboard.');
         console.log('   Checking again in 30 seconds...');
         setTimeout(main, 30_000);
         return;

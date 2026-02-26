@@ -68,8 +68,9 @@ async function main() {
     while (true) {
         // Check if system is running
         const { data: control } = await supabase
-            .from('agent_control')
+            .from('agents')
             .select('status')
+            .limit(1)
             .single();
 
         if (control?.status === 'stopped') {

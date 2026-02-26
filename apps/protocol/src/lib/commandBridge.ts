@@ -67,8 +67,8 @@ export async function executeAssistantCommand(
                 if (!urls) return { success: false, message: 'No se especificaron URLs.', action: 'error' }
 
                 await agentsService.sendCommand(`SET_URLS:${urls}`, 'hunter')
-                // Also persist in agent_control config
-                await updateAgentControlConfig({ hunter_urls: urls })
+                // Also persist in config
+                await updateAgentControlConfig({ urls: urls }, 'scraper')
                 return { success: true, message: `URLs del Hunter actualizadas.`, action: 'config' }
             }
 
@@ -76,7 +76,7 @@ export async function executeAssistantCommand(
                 const limit = payload.limit || payload.value
                 if (!limit) return { success: false, message: 'No se especificó un límite.', action: 'error' }
 
-                await updateAgentControlConfig({ email_agent: { daily_limit: Number(limit) } })
+                await updateAgentControlConfig({ daily_limit: Number(limit) }, 'sales')
                 await agentsService.sendCommand(`SET_LIMIT:${limit}`, 'email')
                 return { success: true, message: `Límite diario de emails: ${limit}.`, action: 'config' }
             }
@@ -155,21 +155,21 @@ async function findAgentByName(name: string) {
     return agents.find(ag => ag.name.toLowerCase().includes(normalized))
 }
 
-/** Merge partial config into agent_control row */
-async function updateAgentControlConfig(partialConfig: Record<string, any>) {
+/** Merge partial config into agents row */
+async function updateAgentControlConfig(partialConfig: Record<string, any>, type: 'scraper' | 'sales' = 'scraper') {
     const { data: existing } = await supabase
-        .from('agent_control')
+        .from('agents')
         .select('config')
-        .eq('id', 1)
+        .eq('type', type)
+        .limit(1)
         .single()
 
     const merged = { ...(existing?.config || {}), ...partialConfig }
 
     await supabase
-        .from('agent_control')
-        .upsert({
-            id: 1,
+        .from('agents')
+        .update({
             config: merged,
             updated_at: new Date().toISOString()
-        })
+        }).eq('type', type)
 }

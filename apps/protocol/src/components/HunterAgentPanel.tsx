@@ -15,9 +15,9 @@ export function HunterAgentPanel() {
 
     const loadData = async () => {
         try {
-            const { data: c } = await supabase.from('agent_control').select('config, status').eq('id', 1).single()
-            if (c?.config?.hunter) setConfig(c.config.hunter)
-            if (c?.status === 'running') setStatus('active')
+            const { data: c } = await supabase.from('agents').select('config, status').eq('type', 'scraper').limit(1).single()
+            if (c?.config) setConfig(c.config)
+            if (c?.status === 'active') setStatus('active')
 
             const { count: leadsCount } = await supabase.from('agent_ledger').select('*', { count: 'exact', head: true }).eq('action', 'LEAD_FOUND')
             const { count: scannedCount } = await supabase.from('agent_ledger').select('*', { count: 'exact', head: true }).in('action', ['GEO_AUDIT_COMPLETED', 'SCAN_COMPLETED'])
@@ -32,12 +32,11 @@ export function HunterAgentPanel() {
         setStatus(newStatus)
         setSaving(true)
         try {
-            const { data: existing } = await supabase.from('agent_control').select('config').eq('id', 1).single()
-            await supabase.from('agent_control').upsert({
-                id: 1,
-                config: { ...(existing?.config || {}), hunter: { ...config, enabled: newStatus === 'active' } },
+            await supabase.from('agents').update({
+                status: newStatus,
+                config: config,
                 updated_at: new Date().toISOString()
-            })
+            }).eq('type', 'scraper')
         } finally {
             setSaving(false)
         }
@@ -46,12 +45,11 @@ export function HunterAgentPanel() {
     const saveConfig = async () => {
         setSaving(true)
         try {
-            const { data: existing } = await supabase.from('agent_control').select('config').eq('id', 1).single()
-            await supabase.from('agent_control').upsert({
-                id: 1,
-                config: { ...(existing?.config || {}), hunter: { ...config, enabled: status === 'active' } },
+            await supabase.from('agents').update({
+                status: status,
+                config: config,
                 updated_at: new Date().toISOString()
-            })
+            }).eq('type', 'scraper')
         } finally {
             setSaving(false)
         }

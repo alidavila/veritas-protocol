@@ -82,12 +82,13 @@ export function EmailAgentPanel() {
 
     const loadConfig = async () => {
         const { data } = await supabase
-            .from('agent_control')
+            .from('agents')
             .select('config')
-            .eq('id', 1)
+            .eq('type', 'sales')
+            .limit(1)
             .single()
-        if (data?.config?.email_agent) {
-            setConfig({ ...DEFAULT_CONFIG, ...data.config.email_agent })
+        if (data?.config) {
+            setConfig({ ...DEFAULT_CONFIG, ...data.config })
         }
     }
 
@@ -124,24 +125,12 @@ export function EmailAgentPanel() {
     const saveConfig = async () => {
         setSaving(true)
         try {
-            const { data: existing } = await supabase
-                .from('agent_control')
-                .select('config')
-                .eq('id', 1)
-                .single()
-
-            const mergedConfig = {
-                ...(existing?.config || {}),
-                email_agent: config
-            }
-
             await supabase
-                .from('agent_control')
-                .upsert({
-                    id: 1,
-                    config: mergedConfig,
+                .from('agents')
+                .update({
+                    config: config,
                     updated_at: new Date().toISOString()
-                })
+                }).eq('type', 'sales')
 
             await supabase
                 .from('agent_commands')
@@ -163,19 +152,13 @@ export function EmailAgentPanel() {
 
         setSaving(true)
         try {
-            const { data: existing } = await supabase
-                .from('agent_control')
-                .select('config')
-                .eq('id', 1)
-                .single()
-
             await supabase
-                .from('agent_control')
-                .upsert({
-                    id: 1,
-                    config: { ...(existing?.config || {}), email_agent: newConfig },
+                .from('agents')
+                .update({
+                    status: newConfig.enabled ? 'active' : 'paused',
+                    config: newConfig,
                     updated_at: new Date().toISOString()
-                })
+                }).eq('type', 'sales')
 
             await supabase.from('agent_commands').insert([{
                 command: newConfig.enabled ? 'EMAIL_AGENT_START' : 'EMAIL_AGENT_STOP',

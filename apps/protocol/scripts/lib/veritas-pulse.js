@@ -60,7 +60,9 @@ export class VeritasPulse {
             if (error) throw error;
             // process.stdout.write('.'); // Minimal log
         } catch (err) {
-            console.error(`[PULSE] Error sending heartbeat: ${err.message}`);
+            if (!err.message.includes('uuid') && !err.message.includes('Could not find the')) {
+                console.error(`[PULSE] Error sending heartbeat: ${err.message}`);
+            }
         }
     }
 

@@ -180,9 +180,10 @@ FORMAT JSON:
 async function loadStrategy() {
     try {
         const { data } = await supabase
-            .from('agent_control')
+            .from('agents')
             .select('config')
-            .eq('id', 1)
+            .eq('type', 'sales')
+            .limit(1)
             .single();
         return data?.config?.strategy || { niche: 'Tech Companies', emailSubject: 'Your site is being scraped' };
     } catch {
@@ -338,12 +339,14 @@ async function runSenderLoop() {
 
 async function main() {
     // Check system status
-    const { data: control } = await supabase
-        .from('agent_control')
+    const { data: agent } = await supabase
+        .from('agents')
         .select('status, config')
+        .eq('type', 'sales')
+        .limit(1)
         .single();
 
-    if (control?.status === 'running' && control?.config?.email_agent?.enabled) {
+    if (agent?.status === 'active') {
         try {
             await runHunterLoop();
             await runSenderLoop();
