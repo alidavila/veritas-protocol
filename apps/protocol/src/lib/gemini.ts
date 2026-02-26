@@ -22,11 +22,19 @@ interface AssistantContext {
     }>
 }
 
-export async function askAssistant(question: string, context: AssistantContext, lang: 'es' | 'en'): Promise<string> {
+export interface AssistantResponse {
+    reply: string
+    command?: string
+    payload?: any
+}
+
+export async function askAssistant(question: string, context: AssistantContext, lang: 'es' | 'en'): Promise<AssistantResponse> {
     if (!genAI) {
-        return lang === 'es'
-            ? 'Error: API key de Gemini no configurada. Agrega VITE_GEMINI_API_KEY a tu archivo .env'
-            : 'Error: Gemini API key not configured. Add VITE_GEMINI_API_KEY to your .env file'
+        return {
+            reply: lang === 'es'
+                ? 'Error: API key de Gemini no configurada. Agrega VITE_GEMINI_API_KEY a tu archivo .env'
+                : 'Error: Gemini API key not configured. Add VITE_GEMINI_API_KEY to your .env file'
+        }
     }
 
     // Fetch business logic
@@ -40,70 +48,48 @@ export async function askAssistant(question: string, context: AssistantContext, 
 
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
-    const systemPrompt = lang === 'es' ? `
-Eres el Asistente Virtual del CEO de VERITAS CORP, una empresa de agentes autónomos de IA.
+    const commandInstructions = `
+COMANDOS DISPONIBLES (usa estos cuando el CEO dé una ORDEN, no una pregunta):
+- UPDATE_HUNTER_NICHE: Cambiar el nicho objetivo del Hunter. Payload: { "niche": "nuevo nicho" }
+- UPDATE_HUNTER_URLS: Cambiar las URLs semilla del Hunter. Payload: { "urls": "url1, url2" }
+- PAUSE_AGENT: Pausar un agente. Payload: { "agent": "hunter|email|treasurer" }
+- RESUME_AGENT: Reanudar un agente. Payload: { "agent": "hunter|email|treasurer" }
+- UPDATE_EMAIL_LIMIT: Cambiar el límite diario de emails. Payload: { "limit": 50 }
+- UPDATE_STRATEGY: Cambiar la estrategia activa. Payload: { "niche": "...", "hook": "..." }
+- APPROVE_ALL_DRAFTS: Aprobar todos los borradores pendientes. Payload: {}
 
-TU ROL:
-- Explicar qué están haciendo los agentes
-- Interpretar métricas del sistema
-- Ayudar al CEO a tomar decisiones
-- Ser conciso y directo (máximo 3-4 oraciones)
+FORMATO DE RESPUESTA:
+Si el CEO da una ORDEN operativa, responde SIEMPRE con JSON puro:
+{"reply": "tu respuesta al CEO", "command": "NOMBRE_COMANDO", "payload": { ... }}
+
+Si el CEO hace una PREGUNTA (no una orden), responde con JSON sin command:
+{"reply": "tu respuesta al CEO"}
+
+IMPORTANTE: Tu respuesta SIEMPRE debe ser JSON válido. Nada más.
+`
+
+    const systemPrompt = `
+Eres el Asistente Operativo del CEO de VERITAS CORP. No solo respondes preguntas, EJECUTAS órdenes.
 
 AGENTES ACTIVOS:
-1. Hunter Alpha (SDR): Escanea empresas y encuentra leads
-2. The Treasurer (Finance): Gestiona liquidez y fondos de agentes
-3. Sentinel Prime (Security): Audita el ledger para detectar anomalías
+1. Hunter (Lead Scraper): Escanea empresas y encuentra leads cualificados
+2. Email Marketer: Genera y envía correos de outreach
+3. Treasurer: Audita ingresos x402 de los Gatekeepers
+4. Gatekeeper: Protege sitios web de scraping no autorizado por bots de IA
 
 MÉTRICAS ACTUALES:
-- Total de eventos: ${context.totalEvents}
 - Leads encontrados: ${context.leadsFound}
-- Alertas de seguridad: ${context.alertsTriggered}
-- Fondos asignados: ${context.fundsAllocated} ETH
 - Estado del sistema: ${context.systemStatus === 'running' ? 'OPERATIVO' : 'DETENIDO'}
+- Fondos: ${context.fundsAllocated} ETH
 
 ÚLTIMOS EVENTOS:
-${context.recentLogs.slice(0, 5).map(log => `- ${log.agent_id}: ${log.action} ${log.details?.target || ''}`).join('\n')}
+${context.recentLogs.slice(0, 5).map((log: any) => `- ${log.agent_id}: ${log.action} ${log.details?.target || ''}`).join('\n')}
 
-IMPORTANTE: Los fondos son SIMULADOS. Los agentes están en modo práctica hasta que se financie la wallet real.
+${commandInstructions}
 
-IMPORTANTE: Los fondos son SIMULADOS. Los agentes están en modo práctica hasta que se financie la wallet real.
+${businessLogic ? `MANUAL DE LÓGICA & NEGOCIO:\n${businessLogic}` : ''}
 
-MANUAL DE LÓGICA & NEGOCIO (ESTO ES LA VERDAD):
-${businessLogic}
-
-Responde la pregunta del CEO de forma clara y accionable.
-` : `
-You are the Virtual Assistant for the CEO of VERITAS CORP, an autonomous AI agents company.
-
-YOUR ROLE:
-- Explain what agents are doing
-- Interpret system metrics
-- Help the CEO make decisions
-- Be concise and direct (max 3-4 sentences)
-
-ACTIVE AGENTS:
-1. Hunter Alpha (SDR): Scans companies and finds leads
-2. The Treasurer (Finance): Manages liquidity and agent funds
-3. Sentinel Prime (Security): Audits ledger to detect anomalies
-
-CURRENT METRICS:
-- Total events: ${context.totalEvents}
-- Leads found: ${context.leadsFound}
-- Security alerts: ${context.alertsTriggered}
-- Funds allocated: ${context.fundsAllocated} ETH
-- System status: ${context.systemStatus === 'running' ? 'RUNNING' : 'STOPPED'}
-
-RECENT EVENTS:
-${context.recentLogs.slice(0, 5).map(log => `- ${log.agent_id}: ${log.action} ${log.details?.target || ''}`).join('\n')}
-
-IMPORTANT: Funds are SIMULATED. Agents are in practice mode until real wallet is funded.
-
-IMPORTANT: Funds are SIMULATED. Agents are in practice mode until real wallet is funded.
-
-BUSINESS LOGIC & MANUAL (THIS IS TRUTH):
-${businessLogic}
-
-Answer the CEO's question clearly and actionably.
+Responde en ${lang === 'es' ? 'español' : 'inglés'}. Sé conciso (máximo 3 oraciones).
 `
 
     const MAX_RETRIES = 2
@@ -111,9 +97,24 @@ Answer the CEO's question clearly and actionably.
 
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
         try {
-            const result = await model.generateContent(`${systemPrompt}\n\nPregunta del CEO: ${question}`)
+            const result = await model.generateContent(`${systemPrompt}\n\nMensaje del CEO: ${question}`)
             const response = await result.response
-            return response.text()
+            const text = response.text().trim()
+
+            // Try to parse as JSON (structured command response)
+            try {
+                // Strip markdown code fences if present
+                const cleaned = text.replace(/^```json?\s*/i, '').replace(/```\s*$/i, '').trim()
+                const parsed = JSON.parse(cleaned)
+                return {
+                    reply: parsed.reply || text,
+                    command: parsed.command,
+                    payload: parsed.payload
+                }
+            } catch {
+                // If not JSON, return as plain reply
+                return { reply: text }
+            }
         } catch (error: any) {
             const is429 = error?.message?.includes('429') || error?.message?.includes('quota')
 
@@ -127,16 +128,20 @@ Answer the CEO's question clearly and actionably.
             console.error('Gemini API error:', error)
 
             if (is429) {
-                return lang === 'es'
-                    ? '⚠️ El asistente alcanzó el límite de uso de la API. Intenta de nuevo en 1 minuto, o actualiza tu plan en https://ai.google.dev'
-                    : '⚠️ Assistant hit API rate limit. Try again in 1 minute, or upgrade your plan at https://ai.google.dev'
+                return {
+                    reply: lang === 'es'
+                        ? '⚠️ El asistente alcanzó el límite de uso de la API. Intenta de nuevo en 1 minuto.'
+                        : '⚠️ Assistant hit API rate limit. Try again in 1 minute.'
+                }
             }
 
-            return lang === 'es'
-                ? `Error al conectar con el asistente: ${error.message}`
-                : `Error connecting to assistant: ${error.message}`
+            return {
+                reply: lang === 'es'
+                    ? `Error al conectar con el asistente: ${error.message}`
+                    : `Error connecting to assistant: ${error.message}`
+            }
         }
     }
 
-    return lang === 'es' ? 'Error inesperado del asistente.' : 'Unexpected assistant error.'
+    return { reply: lang === 'es' ? 'Error inesperado del asistente.' : 'Unexpected assistant error.' }
 }
