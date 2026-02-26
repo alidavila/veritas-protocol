@@ -245,7 +245,7 @@ async function runHunterLoop() {
         let body = sequence.fallbackBody(domain, geoScore);
 
         if (genAI) {
-            const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
             const prompt = sequence.generatePrompt(domain, geoScore, strategy);
 
             try {
@@ -337,31 +337,26 @@ async function runSenderLoop() {
 }
 
 async function main() {
-    pulse.startHeartbeat(); // START THE HEARTBEAT
+    // Check system status
+    const { data: control } = await supabase
+        .from('agent_control')
+        .select('status, config')
+        .single();
 
-    try {
-        await runHunterLoop();
-        await runSenderLoop();
-    } catch (e) {
-        console.error("Agent Loop Error:", e);
-        await pulse.dead(); // Report death
-        process.exit(1);
+    if (control?.status === 'running' && control?.config?.email_agent?.enabled) {
+        try {
+            await runHunterLoop();
+            await runSenderLoop();
+        } catch (e) {
+            console.error("Agent Loop Error:", e);
+            await pulse.dead(); // Report death
+        }
+    } else {
+        console.log('⚠️  Email Agent is disabled via Dashboard.');
     }
 
-    console.log('💤 Agent sleeping (Heartbeat active)...');
-    // We keep the process alive for heartbeats if we want, or we just exit?
-    // For a cron job, we exit. For a daemon, we wait.
-    // The user said "Army of agents". Typically daemons.
-    // I'll keep it running for a bit then exit, OR set it to loop.
-    // Let's make it a Daemon for now? No, the previous code was oneshot.
-    // But "Heartbeat" implies continuous running.
-    // I will enable a loop logic here.
-
-    // Simple Loop
-    setInterval(async () => {
-        await runHunterLoop();
-        await runSenderLoop();
-    }, 60000 * 5); // Every 5 minutes
+    setTimeout(main, 60_000); // Check loop every 1 minute
 }
 
+pulse.startHeartbeat(); // START THE HEARTBEAT (once at boot)
 main().catch(console.error);

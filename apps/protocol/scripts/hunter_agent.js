@@ -222,11 +222,11 @@ async function main() {
     // Check system status
     const { data: control } = await supabase
         .from('agent_control')
-        .select('status')
+        .select('status, config')
         .single();
 
-    if (control?.status !== 'running') {
-        console.log('⚠️  System is STOPPED. Start it from the dashboard to activate Hunter.');
+    if (control?.status !== 'running' || !control?.config?.hunter?.enabled) {
+        console.log('⚠️  System STOPPED or Hunter DISBALED from the dashboard.');
         console.log('   Checking again in 30 seconds...');
         setTimeout(main, 30_000);
         return;

@@ -140,7 +140,6 @@ export function EmailAgentPanel() {
                 .upsert({
                     id: 1,
                     config: mergedConfig,
-                    status: config.enabled ? 'running' : 'stopped',
                     updated_at: new Date().toISOString()
                 })
 
@@ -175,7 +174,6 @@ export function EmailAgentPanel() {
                 .upsert({
                     id: 1,
                     config: { ...(existing?.config || {}), email_agent: newConfig },
-                    status: newConfig.enabled ? 'running' : 'stopped',
                     updated_at: new Date().toISOString()
                 })
 

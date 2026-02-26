@@ -95,14 +95,26 @@ export async function executeAssistantCommand(
             }
 
             case 'APPROVE_ALL_DRAFTS': {
-                const { data: drafts, error } = await supabase
-                    .from('email_drafts')
-                    .update({ status: 'approved' })
-                    .eq('status', 'pending')
-                    .select('id')
+                // Fetch drafts waiting for approval
+                const { data: drafts, error: fetchError } = await supabase
+                    .from('agent_ledger')
+                    .select('*')
+                    .eq('action', 'EMAIL_DRAFT')
+                    .filter('details->>status', 'eq', 'WAITING_APPROVAL')
 
-                if (error) throw error
+                if (fetchError) throw fetchError
                 const count = drafts?.length || 0
+
+                if (count > 0) {
+                    for (const draft of drafts) {
+                        const newDetails = { ...draft.details, status: 'APPROVED' }
+                        await supabase
+                            .from('agent_ledger')
+                            .update({ details: newDetails })
+                            .eq('id', draft.id)
+                    }
+                }
+
                 return { success: true, message: `${count} borradores aprobados.`, action: 'approve' }
             }
 

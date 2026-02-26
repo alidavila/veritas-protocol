@@ -159,7 +159,7 @@ export function DashboardPage() {
                                 <p className="text-zinc-500 text-xs font-bold uppercase">Descargas Portero</p>
                                 <ShieldCheck className="w-4 h-4 text-emerald-500" />
                             </div>
-                            <h3 className="text-2xl font-bold">142</h3>
+                            <h3 className="text-2xl font-bold">{stats.gatekeeperNodes}</h3>
                             <p className="text-[10px] text-zinc-600 mt-1 uppercase">NODOS ACTIVOS</p>
                         </div>
                         <div className={`${THEME.panel} p-5 rounded-2xl`}>
@@ -167,7 +167,7 @@ export function DashboardPage() {
                                 <p className="text-zinc-500 text-xs font-bold uppercase">Peajes (x402)</p>
                                 <Globe className="w-4 h-4 text-purple-500" />
                             </div>
-                            <h3 className="text-2xl font-bold">3,892</h3>
+                            <h3 className="text-2xl font-bold">{stats.tolls.toLocaleString()}</h3>
                             <p className="text-[10px] text-zinc-600 mt-1 uppercase">BOTS INTERCEPTADOS</p>
                         </div>
                         <div className={`${THEME.panel} p-5 rounded-2xl`}>

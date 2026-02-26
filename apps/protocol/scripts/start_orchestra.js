@@ -5,7 +5,8 @@ const agents = [
     { name: 'Gateway', script: 'scripts/x402_gateway.js', color: '\x1b[36m' }, // Cyan
     { name: 'Hunter', script: 'scripts/hunter_agent.js', color: '\x1b[32m' },  // Green
     { name: 'Treasurer', script: 'scripts/treasurer_agent.js', color: '\x1b[33m' }, // Yellow
-    { name: 'Sentinel', script: 'scripts/sentinel_agent.js', color: '\x1b[31m' }  // Red
+    { name: 'Sentinel', script: 'scripts/sentinel_agent.js', color: '\x1b[31m' },  // Red
+    { name: 'Email', script: 'scripts/email_agent.js', color: '\x1b[35m' }  // Magenta
 ];
 
 console.log("🎻 Veritast Protocol Orchestra Styling...\n");

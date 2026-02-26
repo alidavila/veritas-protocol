@@ -20,7 +20,8 @@ export function HunterAgentPanel() {
             if (c?.status === 'running') setStatus('active')
 
             const { count: leadsCount } = await supabase.from('agent_ledger').select('*', { count: 'exact', head: true }).eq('action', 'LEAD_FOUND')
-            setStats({ leads: leadsCount || 0, scanned: (leadsCount || 0) * 3 }) // Simulate scanned based on leads
+            const { count: scannedCount } = await supabase.from('agent_ledger').select('*', { count: 'exact', head: true }).in('action', ['GEO_AUDIT_COMPLETED', 'SCAN_COMPLETED'])
+            setStats({ leads: leadsCount || 0, scanned: scannedCount || 0 })
         } catch (e) {
             console.error(e)
         }
@@ -29,6 +30,17 @@ export function HunterAgentPanel() {
     const toggleStatus = async () => {
         const newStatus = status === 'active' ? 'paused' : 'active'
         setStatus(newStatus)
+        setSaving(true)
+        try {
+            const { data: existing } = await supabase.from('agent_control').select('config').eq('id', 1).single()
+            await supabase.from('agent_control').upsert({
+                id: 1,
+                config: { ...(existing?.config || {}), hunter: { ...config, enabled: newStatus === 'active' } },
+                updated_at: new Date().toISOString()
+            })
+        } finally {
+            setSaving(false)
+        }
     }
 
     const saveConfig = async () => {
@@ -37,7 +49,7 @@ export function HunterAgentPanel() {
             const { data: existing } = await supabase.from('agent_control').select('config').eq('id', 1).single()
             await supabase.from('agent_control').upsert({
                 id: 1,
-                config: { ...(existing?.config || {}), hunter: config },
+                config: { ...(existing?.config || {}), hunter: { ...config, enabled: status === 'active' } },
                 updated_at: new Date().toISOString()
             })
         } finally {

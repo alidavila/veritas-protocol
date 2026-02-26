@@ -32,12 +32,14 @@ export interface Stats {
     leads: number;
     emails: number;
     clicks: number;
+    tolls: number;
+    gatekeeperNodes: number;
 }
 
 export function useVeritasState() {
     const [ledger, setLedger] = useState<Transaction[]>([]);
     const [treasury, setTreasury] = useState(0);
-    const [stats, setStats] = useState<Stats>({ leads: 0, emails: 0, clicks: 0 });
+    const [stats, setStats] = useState<Stats>({ leads: 0, emails: 0, clicks: 0, tolls: 0, gatekeeperNodes: 0 });
     const [signals, setSignals] = useState<Signal[]>([]);
 
     // Initial Fetch & Subscription
@@ -111,10 +113,23 @@ export function useVeritasState() {
                 .select('*', { count: 'exact', head: true })
                 .in('action', ['CLICK', 'RESPONSE', 'REPLY']);
 
+            // Count x402 tolls
+            const { count: tollCount } = await supabase
+                .from('agent_ledger')
+                .select('*', { count: 'exact', head: true })
+                .in('action', ['TOLL_COLLECTED', 'PAYMENT_ACCEPTED']);
+
+            // Count gatekeeper installations (agents with gatekeeper in name)
+            const { count: gkCount } = await supabase
+                .from('agents')
+                .select('*', { count: 'exact', head: true });
+
             setStats({
                 leads: leadCount || 0,
                 emails: emailCount || 0,
-                clicks: clickCount || 0
+                clicks: clickCount || 0,
+                tolls: tollCount || 0,
+                gatekeeperNodes: gkCount || 0
             });
         } catch (e) {
             console.error('Error fetching stats:', e);
