@@ -20,7 +20,8 @@ export function HunterAgentPanel() {
             if (c?.status === 'running') setStatus('active')
 
             const { count: leadsCount } = await supabase.from('agent_ledger').select('*', { count: 'exact', head: true }).eq('action', 'LEAD_FOUND')
-            setStats({ leads: leadsCount || 0, scanned: (leadsCount || 0) * 3 }) // Simulate scanned based on leads
+            const { count: scannedCount } = await supabase.from('agent_ledger').select('*', { count: 'exact', head: true }).in('action', ['GEO_AUDIT_COMPLETED', 'SCAN_COMPLETED'])
+            setStats({ leads: leadsCount || 0, scanned: scannedCount || 0 })
         } catch (e) {
             console.error(e)
         }
