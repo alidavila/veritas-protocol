@@ -35,7 +35,7 @@ export function DashboardPage() {
     const [searchParams] = useSearchParams()
     const gatekeeperInstalled = searchParams.get('gatekeeper') === 'installed'
     const [snippetCopied, setSnippetCopied] = useState(false)
-    const [gkInstallTab, setGkInstallTab] = useState<'js' | 'wp'>('js')
+    const [gkInstallTab, setGkInstallTab] = useState<'js' | 'wp' | 'cli'>('js')
 
     // Mission Control State — loads from Supabase
     const [mission, setMission] = useState({
@@ -266,7 +266,7 @@ export function DashboardPage() {
                                             </button>
                                         </div>
                                     </>
-                                ) : (
+                                ) : gkInstallTab === 'wp' ? (
                                     <div className="space-y-4">
                                         <div className="bg-black/40 p-6 rounded-xl border border-zinc-800 text-center">
                                             <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
@@ -291,6 +291,48 @@ export function DashboardPage() {
                                                         Sube el archivo a /wp-content/plugins/ y actívalo desde el admin.
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {/* Step by step CLI */}
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                            <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
+                                                <div className="text-emerald-500 font-mono text-[9px] font-bold mb-2">PASO 1</div>
+                                                <p className="text-[11px] text-zinc-400">Instala el estándar via NPX</p>
+                                            </div>
+                                            <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
+                                                <div className="text-emerald-500 font-mono text-[9px] font-bold mb-2">PASO 2</div>
+                                                <p className="text-[11px] text-zinc-400">Genera tu DID y Wallet local</p>
+                                            </div>
+                                            <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
+                                                <div className="text-emerald-500 font-mono text-[9px] font-bold mb-2">PASO 3</div>
+                                                <p className="text-[11px] text-zinc-400">Firma challenges de IA</p>
+                                            </div>
+                                        </div>
+
+                                        {/* CLI Commands */}
+                                        <div className="bg-black rounded-xl border border-zinc-800 p-4 font-mono text-[11px] space-y-2">
+                                            <div className="flex justify-between items-center text-zinc-500 border-b border-zinc-900 pb-2 mb-2">
+                                                <span>Veritas Protocol CLI</span>
+                                                <div className="flex gap-1">
+                                                    <div className="w-2 h-2 rounded-full bg-red-500/30"></div>
+                                                    <div className="w-2 h-2 rounded-full bg-yellow-500/30"></div>
+                                                    <div className="w-2 h-2 rounded-full bg-green-500/30"></div>
+                                                </div>
+                                            </div>
+                                            <div className="text-emerald-500">
+                                                <span className="opacity-50 mr-2">$</span> npx veritas-cli init
+                                                <span className="text-zinc-600 ml-4"># Genera tu identidad descentralizada</span>
+                                            </div>
+                                            <div className="text-emerald-500">
+                                                <span className="opacity-50 mr-2">$</span> npx veritas-cli status
+                                                <span className="text-zinc-600 ml-4"># Muestra tu DID y Wallet</span>
+                                            </div>
+                                            <div className="text-emerald-500">
+                                                <span className="opacity-50 mr-2">$</span> npx veritas-cli sign "challenge_123"
+                                                <span className="text-zinc-600 ml-4"># Firma para identificarte</span>
                                             </div>
                                         </div>
                                     </div>
