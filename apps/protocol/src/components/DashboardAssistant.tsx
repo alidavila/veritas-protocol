@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Mic, Send, MessageCircle } from 'lucide-react'
 import { askAssistant } from '../lib/gemini'
+import { executeAssistantCommand } from '../lib/commandBridge'
 
 interface Message {
     role: 'user' | 'assistant'
@@ -21,12 +22,12 @@ interface Props {
     isDark?: boolean
 }
 
-export function DashboardAssistant({ 
-    metrics = { totalEvents: 0, leadsFound: 0, alertsTriggered: 0, fundsAllocated: 0 }, 
-    systemStatus = 'stopped', 
-    recentLogs = [], 
-    lang = 'es', 
-    isDark = true 
+export function DashboardAssistant({
+    metrics = { totalEvents: 0, leadsFound: 0, alertsTriggered: 0, fundsAllocated: 0 },
+    systemStatus = 'stopped',
+    recentLogs = [],
+    lang = 'es',
+    isDark = true
 }: Props) {
     // Internal state for chat visibility/messages
     const [messages, setMessages] = useState<Message[]>([])
@@ -118,7 +119,7 @@ export function DashboardAssistant({
         setIsLoading(true)
 
         try {
-            const response = await askAssistant(message, {
+            const result = await askAssistant(message, {
                 totalEvents: metrics.totalEvents,
                 leadsFound: metrics.leadsFound,
                 alertsTriggered: metrics.alertsTriggered,
@@ -127,9 +128,18 @@ export function DashboardAssistant({
                 recentLogs
             }, lang)
 
-            const assistantMessage: Message = { role: 'assistant', content: response, timestamp: new Date() }
+            let displayText = result.reply
+
+            // Execute command if present
+            if (result.command) {
+                const cmdResult = await executeAssistantCommand(result.command, result.payload)
+                const icon = cmdResult.success ? '✅' : '❌'
+                displayText = `${icon} [${result.command}] ${cmdResult.message}\n\n${result.reply}`
+            }
+
+            const assistantMessage: Message = { role: 'assistant', content: displayText, timestamp: new Date() }
             setMessages(prev => [...prev, assistantMessage])
-            speak(response)
+            speak(result.reply)
         } catch (error) {
             console.error('Assistant error:', error)
         } finally {

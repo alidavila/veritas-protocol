@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useTranslation } from 'react-i18next'
 import {
-    Mail, Play, Square, Check, X, Clock, Send, Settings,
-    RefreshCw, Eye, Ban, Zap
+    Mail, Check, X, Settings,
+    RefreshCw, Eye, Ban
 } from 'lucide-react'
+import { ExpandablePanel } from './ExpandablePanel'
 
 interface EmailDraft {
     id: string
@@ -59,7 +60,6 @@ export function EmailAgentPanel() {
     const [drafts, setDrafts] = useState<EmailDraft[]>([])
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
-    const [showConfig, setShowConfig] = useState(false)
     const [previewDraft, setPreviewDraft] = useState<EmailDraft | null>(null)
     const [blacklistInput, setBlacklistInput] = useState('')
     const [stats, setStats] = useState({
@@ -260,97 +260,29 @@ export function EmailAgentPanel() {
     }
 
     return (
-        <div className="space-y-6">
-            {/* ── HEADER ── */}
-            <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${config.enabled ? 'bg-purple-500/10 border-purple-500/30' : 'bg-zinc-900 border-zinc-700'}`}>
-                            <Mail className={`w-6 h-6 ${config.enabled ? 'text-purple-400' : 'text-zinc-500'}`} />
-                        </div>
-                        <div>
-                            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                                {t('emailAgent.title')}
-                                <span className={`text-[10px] px-2 py-0.5 rounded-full border uppercase font-mono ${config.enabled
-                                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                                    : 'bg-zinc-800 text-zinc-500 border-zinc-700'
-                                    }`}>
-                                    {config.enabled ? t('emailAgent.active') : t('emailAgent.paused')}
-                                </span>
-                            </h2>
-                            <p className="text-xs text-zinc-500 font-mono">did:veritas:marketer:001</p>
-                        </div>
+        <ExpandablePanel
+            title={t('emailAgent.title')}
+            icon={Mail}
+            did="did:veritas:marketer:001"
+            status={config.enabled ? 'active' : 'paused'}
+            onToggleStatus={toggleEnabled}
+            headerStats={
+                <div className="flex gap-4 text-[10px] font-mono mr-4">
+                    <div className="flex flex-col items-end">
+                        <span className="text-zinc-500">ENVIADOS HOY</span>
+                        <span className="text-zinc-300">{stats.sent_today} / {config.daily_limit}</span>
                     </div>
-
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => setShowConfig(!showConfig)}
-                            className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-                            title={t('emailAgent.settings')}
-                        >
-                            <Settings className="w-5 h-5" />
-                        </button>
-                        <button
-                            onClick={loadAll}
-                            className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-                            title={t('emailAgent.refresh')}
-                        >
-                            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-                        </button>
-                        <button
-                            onClick={toggleEnabled}
-                            disabled={saving}
-                            className={`px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${config.enabled
-                                ? 'bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20'
-                                : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20'
-                                }`}
-                        >
-                            {config.enabled ? <Square className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
-                            {config.enabled ? t('emailAgent.stop') : t('emailAgent.activate')}
-                        </button>
+                    <div className="flex flex-col items-end">
+                        <span className="text-yellow-500/50">PENDIENTES</span>
+                        <span className="text-yellow-500 font-bold">{stats.pending}</span>
                     </div>
                 </div>
-
-                {/* Stats Row */}
-                <div className="grid grid-cols-5 gap-3">
-                    {[
-                        { label: t('emailAgent.statsPending'), value: stats.pending, icon: Clock, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
-                        { label: t('emailAgent.statsApproved'), value: stats.approved, icon: Check, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-                        { label: t('emailAgent.statsTotalSent'), value: stats.total_sent, icon: Send, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-                        { label: t('emailAgent.statsSentToday'), value: stats.sent_today, icon: Zap, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-                        { label: t('emailAgent.statsRejected'), value: stats.rejected, icon: X, color: 'text-red-500', bg: 'bg-red-500/10' },
-                    ].map((s, i) => (
-                        <div key={i} className="bg-zinc-900/50 border border-zinc-800/50 rounded-xl p-3 text-center">
-                            <div className={`inline-flex p-1.5 rounded-lg ${s.bg} mb-1`}>
-                                <s.icon className={`w-3.5 h-3.5 ${s.color}`} />
-                            </div>
-                            <p className="text-xl font-bold text-white">{s.value}</p>
-                            <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{s.label}</p>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Daily Limit Bar */}
-                <div className="mt-4 pt-4 border-t border-zinc-800">
-                    <div className="flex justify-between text-xs mb-1">
-                        <span className="text-zinc-500">{t('emailAgent.dailyUsage')}</span>
-                        <span className="text-zinc-400 font-mono">{stats.sent_today} / {config.daily_limit}</span>
-                    </div>
-                    <div className="w-full bg-zinc-900 h-2 rounded-full overflow-hidden">
-                        <div
-                            className={`h-full rounded-full transition-all ${stats.sent_today >= config.daily_limit ? 'bg-red-500' :
-                                stats.sent_today > config.daily_limit * 0.8 ? 'bg-yellow-500' : 'bg-emerald-500'
-                                }`}
-                            style={{ width: `${Math.min((stats.sent_today / config.daily_limit) * 100, 100)}%` }}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* ── CONFIG PANEL ── */}
-            {showConfig && (
-                <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-6 animate-in slide-in-from-top-2">
-                    <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
+            }
+        >
+            <div className="space-y-8">
+                {/* ── CONFIG PANEL ── */}
+                <div className="space-y-6">
+                    <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
                         <Settings className="w-4 h-4" /> {t('emailAgent.configuration')}
                     </h3>
 
@@ -485,141 +417,141 @@ export function EmailAgentPanel() {
                         </button>
                     </div>
                 </div>
-            )}
 
-            {/* ── DRAFT INBOX ── */}
-            <div className="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
-                <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
-                        <Mail className="w-4 h-4" />
-                        {t('emailAgent.draftInbox')}
-                        {stats.pending > 0 && (
-                            <span className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 px-2 py-0.5 rounded-full text-[10px]">
-                                {t('emailAgent.pendingCount', { count: stats.pending })}
-                            </span>
-                        )}
-                    </h3>
-                    {pendingDrafts.length > 1 && (
-                        <button
-                            onClick={approveAll}
-                            className="text-xs px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/20 flex items-center gap-1"
-                        >
-                            <Check className="w-3 h-3" /> {t('emailAgent.approveAll', { count: pendingDrafts.length })}
-                        </button>
-                    )}
-                </div>
-
-                {drafts.length === 0 ? (
-                    <div className="p-8 text-center text-zinc-600 italic">
-                        {t('emailAgent.noDrafts')}
-                    </div>
-                ) : (
-                    <div className="divide-y divide-zinc-900">
-                        {drafts.slice(0, 20).map(draft => (
-                            <div
-                                key={draft.id}
-                                className={`p-4 flex items-center justify-between hover:bg-zinc-900/30 transition-colors ${draft.details.status === 'WAITING_APPROVAL' ? 'bg-yellow-500/[0.02]' : ''}`}
+                {/* ── DRAFT INBOX ── */}
+                <div className="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
+                    <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+                        <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
+                            <Mail className="w-4 h-4" />
+                            {t('emailAgent.draftInbox')}
+                            {stats.pending > 0 && (
+                                <span className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 px-2 py-0.5 rounded-full text-[10px]">
+                                    {t('emailAgent.pendingCount', { count: stats.pending })}
+                                </span>
+                            )}
+                        </h3>
+                        {pendingDrafts.length > 1 && (
+                            <button
+                                onClick={approveAll}
+                                className="text-xs px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/20 flex items-center gap-1"
                             >
-                                <div className="flex items-center gap-3 flex-1 min-w-0">
-                                    <div className={`w-2 h-2 rounded-full shrink-0 ${draft.details.status === 'WAITING_APPROVAL' ? 'bg-yellow-500 animate-pulse' :
-                                        draft.details.status === 'APPROVED' ? 'bg-blue-500' :
-                                            draft.details.status === 'SENT' ? 'bg-emerald-500' : 'bg-red-500'
-                                        }`} />
-                                    <div className="min-w-0 flex-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm font-medium text-white truncate">{draft.details.target_domain}</span>
-                                            {draft.details.sequence_num && (
-                                                <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${draft.details.sequence_num === 1 ? 'text-cyan-400 bg-cyan-500/10' :
+                                <Check className="w-3 h-3" /> {t('emailAgent.approveAll', { count: pendingDrafts.length })}
+                            </button>
+                        )}
+                    </div>
+
+                    {drafts.length === 0 ? (
+                        <div className="p-8 text-center text-zinc-600 italic">
+                            {t('emailAgent.noDrafts')}
+                        </div>
+                    ) : (
+                        <div className="divide-y divide-zinc-900">
+                            {drafts.slice(0, 20).map(draft => (
+                                <div
+                                    key={draft.id}
+                                    className={`p-4 flex items-center justify-between hover:bg-zinc-900/30 transition-colors ${draft.details.status === 'WAITING_APPROVAL' ? 'bg-yellow-500/[0.02]' : ''}`}
+                                >
+                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                        <div className={`w-2 h-2 rounded-full shrink-0 ${draft.details.status === 'WAITING_APPROVAL' ? 'bg-yellow-500 animate-pulse' :
+                                            draft.details.status === 'APPROVED' ? 'bg-blue-500' :
+                                                draft.details.status === 'SENT' ? 'bg-emerald-500' : 'bg-red-500'
+                                            }`} />
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-medium text-white truncate">{draft.details.target_domain}</span>
+                                                {draft.details.sequence_num && (
+                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${draft.details.sequence_num === 1 ? 'text-cyan-400 bg-cyan-500/10' :
                                                         draft.details.sequence_num === 2 ? 'text-orange-400 bg-orange-500/10' :
                                                             'text-pink-400 bg-pink-500/10'
-                                                    }`}>
-                                                    #{draft.details.sequence_num}
-                                                </span>
-                                            )}
-                                            {draft.details.geo_score && (
-                                                <span className="text-[10px] font-mono text-zinc-500">GEO:{draft.details.geo_score}</span>
-                                            )}
+                                                        }`}>
+                                                        #{draft.details.sequence_num}
+                                                    </span>
+                                                )}
+                                                {draft.details.geo_score && (
+                                                    <span className="text-[10px] font-mono text-zinc-500">GEO:{draft.details.geo_score}</span>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-zinc-500 truncate">{draft.details.subject}</p>
                                         </div>
-                                        <p className="text-xs text-zinc-500 truncate">{draft.details.subject}</p>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 shrink-0 ml-4">
+                                        <span className={`text-[10px] px-2 py-0.5 rounded border uppercase font-mono ${draft.details.status === 'WAITING_APPROVAL' ? 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10' :
+                                            draft.details.status === 'APPROVED' ? 'text-blue-400 border-blue-500/30 bg-blue-500/10' :
+                                                draft.details.status === 'SENT' ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' :
+                                                    'text-red-400 border-red-500/30 bg-red-500/10'
+                                            }`}>
+                                            {getStatusLabel(draft.details.status)}
+                                        </span>
+
+                                        <button
+                                            onClick={() => setPreviewDraft(previewDraft?.id === draft.id ? null : draft)}
+                                            className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-800"
+                                            title={t('emailAgent.preview')}
+                                        >
+                                            <Eye className="w-3.5 h-3.5" />
+                                        </button>
+
+                                        {draft.details.status === 'WAITING_APPROVAL' && (
+                                            <>
+                                                <button
+                                                    onClick={() => approveDraft(draft)}
+                                                    className="p-1.5 rounded-lg text-emerald-500 hover:bg-emerald-500/10"
+                                                    title={t('emailAgent.approve')}
+                                                >
+                                                    <Check className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => rejectDraft(draft)}
+                                                    className="p-1.5 rounded-lg text-red-500 hover:bg-red-500/10"
+                                                    title={t('emailAgent.reject')}
+                                                >
+                                                    <X className="w-3.5 h-3.5" />
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
-
-                                <div className="flex items-center gap-2 shrink-0 ml-4">
-                                    <span className={`text-[10px] px-2 py-0.5 rounded border uppercase font-mono ${draft.details.status === 'WAITING_APPROVAL' ? 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10' :
-                                        draft.details.status === 'APPROVED' ? 'text-blue-400 border-blue-500/30 bg-blue-500/10' :
-                                            draft.details.status === 'SENT' ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' :
-                                                'text-red-400 border-red-500/30 bg-red-500/10'
-                                        }`}>
-                                        {getStatusLabel(draft.details.status)}
-                                    </span>
-
-                                    <button
-                                        onClick={() => setPreviewDraft(previewDraft?.id === draft.id ? null : draft)}
-                                        className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-800"
-                                        title={t('emailAgent.preview')}
-                                    >
-                                        <Eye className="w-3.5 h-3.5" />
-                                    </button>
-
-                                    {draft.details.status === 'WAITING_APPROVAL' && (
-                                        <>
-                                            <button
-                                                onClick={() => approveDraft(draft)}
-                                                className="p-1.5 rounded-lg text-emerald-500 hover:bg-emerald-500/10"
-                                                title={t('emailAgent.approve')}
-                                            >
-                                                <Check className="w-3.5 h-3.5" />
-                                            </button>
-                                            <button
-                                                onClick={() => rejectDraft(draft)}
-                                                className="p-1.5 rounded-lg text-red-500 hover:bg-red-500/10"
-                                                title={t('emailAgent.reject')}
-                                            >
-                                                <X className="w-3.5 h-3.5" />
-                                            </button>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                {/* Preview Panel */}
-                {previewDraft && (
-                    <div className="border-t border-zinc-800 p-6 bg-zinc-900/30">
-                        <div className="flex items-center justify-between mb-4">
-                            <div>
-                                <p className="text-xs text-zinc-500">{t('common.to')}: <span className="text-zinc-300">{previewDraft.details.target_email}</span></p>
-                                <p className="text-sm font-bold text-white mt-1">{previewDraft.details.subject}</p>
-                            </div>
-                            <button onClick={() => setPreviewDraft(null)} className="text-zinc-500 hover:text-white">
-                                <X className="w-4 h-4" />
-                            </button>
+                            ))}
                         </div>
-                        <div
-                            className="text-sm text-zinc-300 bg-black border border-zinc-800 rounded-xl p-4 max-h-60 overflow-y-auto"
-                            dangerouslySetInnerHTML={{ __html: previewDraft.details.body }}
-                        />
-                        {previewDraft.details.status === 'WAITING_APPROVAL' && (
-                            <div className="flex gap-2 mt-4">
-                                <button
-                                    onClick={() => { approveDraft(previewDraft); setPreviewDraft(null) }}
-                                    className="flex-1 py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-lg font-bold text-sm hover:bg-emerald-500/20 flex items-center justify-center gap-2"
-                                >
-                                    <Check className="w-4 h-4" /> {t('emailAgent.approveAndQueue')}
-                                </button>
-                                <button
-                                    onClick={() => { rejectDraft(previewDraft); setPreviewDraft(null) }}
-                                    className="flex-1 py-2 bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg font-bold text-sm hover:bg-red-500/20 flex items-center justify-center gap-2"
-                                >
-                                    <X className="w-4 h-4" /> {t('emailAgent.reject')}
+                    )}
+
+                    {/* Preview Panel */}
+                    {previewDraft && (
+                        <div className="border-t border-zinc-800 p-6 bg-zinc-900/30">
+                            <div className="flex items-center justify-between mb-4">
+                                <div>
+                                    <p className="text-xs text-zinc-500">{t('common.to')}: <span className="text-zinc-300">{previewDraft.details.target_email}</span></p>
+                                    <p className="text-sm font-bold text-white mt-1">{previewDraft.details.subject}</p>
+                                </div>
+                                <button onClick={() => setPreviewDraft(null)} className="text-zinc-500 hover:text-white">
+                                    <X className="w-4 h-4" />
                                 </button>
                             </div>
-                        )}
-                    </div>
-                )}
+                            <div
+                                className="text-sm text-zinc-300 bg-black border border-zinc-800 rounded-xl p-4 max-h-60 overflow-y-auto"
+                                dangerouslySetInnerHTML={{ __html: previewDraft.details.body }}
+                            />
+                            {previewDraft.details.status === 'WAITING_APPROVAL' && (
+                                <div className="flex gap-2 mt-4">
+                                    <button
+                                        onClick={() => { approveDraft(previewDraft); setPreviewDraft(null) }}
+                                        className="flex-1 py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-lg font-bold text-sm hover:bg-emerald-500/20 flex items-center justify-center gap-2"
+                                    >
+                                        <Check className="w-4 h-4" /> {t('emailAgent.approveAndQueue')}
+                                    </button>
+                                    <button
+                                        onClick={() => { rejectDraft(previewDraft); setPreviewDraft(null) }}
+                                        className="flex-1 py-2 bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg font-bold text-sm hover:bg-red-500/20 flex items-center justify-center gap-2"
+                                    >
+                                        <X className="w-4 h-4" /> {t('emailAgent.reject')}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
+        </ExpandablePanel>
     )
 }

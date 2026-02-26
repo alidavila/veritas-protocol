@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Zap, Shield, ArrowDown, Activity, Lock, Download, Globe, Terminal, Copy, CheckCircle, PlayCircle, X } from 'lucide-react'
+import { Zap, Shield, ArrowDown, Activity, Lock, Download, Globe, Terminal, Copy, Check, CheckCircle, PlayCircle, X } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useBotDetection } from '../hooks/useBotDetection'
 

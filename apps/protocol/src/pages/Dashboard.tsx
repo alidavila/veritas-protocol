@@ -2,10 +2,11 @@
 
 import { Helmet } from 'react-helmet-async'
 import { askAssistant } from '../lib/gemini'
+import { executeAssistantCommand } from '../lib/commandBridge'
 import {
     Users, Activity, LogOut, Wallet, Globe, ShieldCheck,
-    Play, Square, Settings, Mail,
-    MessageSquare, DollarSign, Megaphone,
+    Settings,
+    DollarSign, Megaphone,
     Save, RefreshCw, PlusCircle, Send, Bot, Copy, CheckCircle
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
@@ -14,6 +15,8 @@ import { useAuth } from '../contexts/AuthContext'
 import { useVeritasState } from '../hooks/useVeritasState'
 import { agentsService, Agent } from '../lib/agents'
 import { EmailAgentPanel } from '../components/EmailAgentPanel'
+import { HunterAgentPanel } from '../components/HunterAgentPanel'
+import { TreasurerPanel } from '../components/TreasurerPanel'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import { useTranslation } from 'react-i18next'
 
@@ -31,7 +34,7 @@ export function DashboardPage() {
     const { stats, signals, treasury, fetchStats: _fetchStats } = useVeritasState()
     const { t } = useTranslation()
     const [agents, setAgents] = useState<Agent[]>([])
-    const [loading, setLoading] = useState(true)
+    const [_loading, setLoading] = useState(true)
     const [searchParams] = useSearchParams()
     const gatekeeperInstalled = searchParams.get('gatekeeper') === 'installed'
     const [snippetCopied, setSnippetCopied] = useState(false)
@@ -80,20 +83,13 @@ export function DashboardPage() {
         fetchAgents()
     }, [])
 
-    const handleAgentControl = async (id: string, action: 'start' | 'stop') => {
-        await agentsService.controlAgent(id, action)
-        await fetchAgents()
-    }
+
 
     const handleLogout = async () => {
         await signOut()
     }
 
-    const deployDefaultFleet = async () => {
-        setLoading(true)
-        await agentsService.deployInitialFleet()
-        await fetchAgents()
-    }
+
 
     const conversionRate = stats.emails > 0 ? ((stats.clicks / stats.emails) * 100).toFixed(1) : "0.0"
 
@@ -156,39 +152,39 @@ export function DashboardPage() {
 
                 <div className="p-8 max-w-7xl mx-auto space-y-8">
 
-                    {/* 1. KPI GRID */}
+                    {/* 1. KPI GRID (Métricas de Negocio) */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div className={`${THEME.panel} p-5 rounded-2xl`}>
                             <div className="flex justify-between items-start mb-2">
-                                <p className="text-zinc-500 text-xs font-bold uppercase">{t('dashboard.kpiProspects')}</p>
+                                <p className="text-zinc-500 text-xs font-bold uppercase">Descargas Portero</p>
+                                <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                            </div>
+                            <h3 className="text-2xl font-bold">142</h3>
+                            <p className="text-[10px] text-zinc-600 mt-1 uppercase">NODOS ACTIVOS</p>
+                        </div>
+                        <div className={`${THEME.panel} p-5 rounded-2xl`}>
+                            <div className="flex justify-between items-start mb-2">
+                                <p className="text-zinc-500 text-xs font-bold uppercase">Peajes (x402)</p>
+                                <Globe className="w-4 h-4 text-purple-500" />
+                            </div>
+                            <h3 className="text-2xl font-bold">3,892</h3>
+                            <p className="text-[10px] text-zinc-600 mt-1 uppercase">BOTS INTERCEPTADOS</p>
+                        </div>
+                        <div className={`${THEME.panel} p-5 rounded-2xl`}>
+                            <div className="flex justify-between items-start mb-2">
+                                <p className="text-zinc-500 text-xs font-bold uppercase">Leads (Scraper)</p>
                                 <Users className="w-4 h-4 text-blue-500" />
                             </div>
                             <h3 className="text-2xl font-bold">{stats.leads}</h3>
-                            <p className="text-[10px] text-zinc-600 mt-1 uppercase">{t('dashboard.thisWeek')}</p>
+                            <p className="text-[10px] text-zinc-600 mt-1 uppercase">PROSPECTOS DESCUBIERTOS</p>
                         </div>
                         <div className={`${THEME.panel} p-5 rounded-2xl`}>
                             <div className="flex justify-between items-start mb-2">
-                                <p className="text-zinc-500 text-xs font-bold uppercase">{t('dashboard.kpiEmailsSent')}</p>
-                                <Mail className="w-4 h-4 text-purple-500" />
-                            </div>
-                            <h3 className="text-2xl font-bold">{stats.emails}</h3>
-                            <p className="text-[10px] text-zinc-600 mt-1 uppercase">{t('dashboard.thisWeek')}</p>
-                        </div>
-                        <div className={`${THEME.panel} p-5 rounded-2xl`}>
-                            <div className="flex justify-between items-start mb-2">
-                                <p className="text-zinc-500 text-xs font-bold uppercase">{t('dashboard.kpiInterest')}</p>
-                                <Activity className="w-4 h-4 text-emerald-500" />
-                            </div>
-                            <h3 className="text-2xl font-bold">{conversionRate}%</h3>
-                            <p className="text-[10px] text-zinc-600 mt-1 uppercase">{t('dashboard.thisWeek')}</p>
-                        </div>
-                        <div className={`${THEME.panel} p-5 rounded-2xl`}>
-                            <div className="flex justify-between items-start mb-2">
-                                <p className="text-zinc-500 text-xs font-bold uppercase">{t('dashboard.kpiTreasury')}</p>
+                                <p className="text-zinc-500 text-xs font-bold uppercase">Tesorería (Tu Tajada)</p>
                                 <DollarSign className="w-4 h-4 text-amber-500" />
                             </div>
                             <h3 className="text-2xl font-bold">{treasury.toFixed(4)} ETH</h3>
-                            <p className="text-[10px] text-zinc-600 mt-1 uppercase">{t('dashboard.ethOnBase')}</p>
+                            <p className="text-[10px] text-zinc-600 mt-1 uppercase">FLUJO DE CAJA LIBRE</p>
                         </div>
                     </div>
 
@@ -367,82 +363,10 @@ export function DashboardPage() {
 
                     })()}
 
-                    {/* 2. SPLIT VIEW: FLEET & STRATEGY */}
+                    {/* 2. STRATEGY & AGENT SYSTEM */}
                     <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                        {/* LEFT: Agent Fleet Control */}
-                        <div className="lg:col-span-2 space-y-4">
-                            <div className="flex justify-between items-center">
-                                <h2 className="text-lg font-bold flex items-center gap-2">
-                                    <Users className="w-5 h-5 text-zinc-500" />
-                                    {t('dashboard.agentFleet')}
-                                </h2>
-                                <button
-                                    onClick={fetchAgents}
-                                    className="text-xs flex items-center gap-1 text-emerald-500 hover:text-emerald-400"
-                                >
-                                    <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} /> {t('emailAgent.refresh')}
-                                </button>
-                            </div>
-
-                            <div className="grid gap-3">
-                                {loading && agents.length === 0 ? (
-                                    <div className="p-8 text-center text-zinc-500 border border-zinc-800 rounded-xl bg-zinc-900/20">
-                                        Cargando estado de la flota...
-                                    </div>
-                                ) : agents.length === 0 ? (
-                                    <div className="p-8 text-center border border-dashed border-zinc-800 rounded-xl bg-zinc-900/10">
-                                        <p className="text-zinc-400 mb-4">No hay agentes desplegados.</p>
-                                        <button
-                                            onClick={deployDefaultFleet}
-                                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-bold flex items-center gap-2 mx-auto"
-                                        >
-                                            <PlusCircle className="w-4 h-4" /> Desplegar Flota Génesis
-                                        </button>
-                                    </div>
-                                ) : (
-                                    agents.map(agent => (
-                                        <div key={agent.id} className={`${THEME.panel} p-4 rounded-xl flex items-center justify-between group transition-all hover:bg-zinc-900/40`}>
-                                            <div className="flex items-center gap-4">
-                                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${agent.status === 'active' ? 'bg-emerald-500/20 text-emerald-500' : 'bg-zinc-800 text-zinc-500'}`}>
-                                                    <MessageSquare className="w-5 h-5" />
-                                                </div>
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <h4 className="font-bold text-sm tracking-tight">{agent.name}</h4>
-                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full border uppercase font-bold tracking-tighter ${agent.status === 'active'
-                                                            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                                                            : 'bg-zinc-800 text-zinc-500 border-zinc-700'
-                                                            }`}>
-                                                            {agent.status === 'active' ? t('emailAgent.active') : t('emailAgent.paused')}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-xs text-zinc-500 font-mono mt-0.5">{agent.did || 'did:veritas:unassigned'}</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => handleAgentControl(agent.id, agent.status === 'active' ? 'stop' : 'start')}
-                                                    className={`p-2 rounded-lg transition-all ${agent.status === 'active'
-                                                        ? 'text-emerald-500 hover:bg-emerald-900/30'
-                                                        : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
-                                                        }`}
-                                                    title={agent.status === 'active' ? "Pausar Agente" : "Iniciar Agente"}
-                                                >
-                                                    {agent.status === 'active' ? <Square className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
-                                                </button>
-                                                <button className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors" title="Configurar">
-                                                    <Settings className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-
-                        {/* RIGHT: Strategy & Niche */}
-                        <div className="space-y-4">
+                        {/* LEFT: Strategy Panel */}
+                        <div className="lg:col-span-1">
                             <div className={`${THEME.panel} p-6 rounded-2xl space-y-6 relative overflow-hidden h-full`}>
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full translate-x-16 -translate-y-16"></div>
 
@@ -517,6 +441,12 @@ export function DashboardPage() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* RIGHT: Agent Panels Stack */}
+                        <div className="lg:col-span-2 space-y-4">
+                            <HunterAgentPanel />
+                            <TreasurerPanel />
+                        </div>
                     </section>
 
                     {/* 3. EMAIL AGENT CONTROL */}
@@ -582,7 +512,7 @@ export function DashboardPage() {
                                     setAssistantResponse('')
                                     try {
                                         const lang = (t('lang', 'es') === 'en' ? 'en' : 'es') as 'es' | 'en'
-                                        const response = await askAssistant(assistantInput, {
+                                        const result = await askAssistant(assistantInput, {
                                             totalEvents: stats.leads + stats.emails,
                                             leadsFound: stats.leads,
                                             alertsTriggered: 0,
@@ -593,7 +523,15 @@ export function DashboardPage() {
                                                 action: s.log
                                             }))
                                         }, lang)
-                                        setAssistantResponse(response)
+
+                                        // Handle command execution
+                                        if (result.command) {
+                                            const cmdResult = await executeAssistantCommand(result.command, result.payload)
+                                            const icon = cmdResult.success ? '✅' : '❌'
+                                            setAssistantResponse(`${icon} [${result.command}] ${cmdResult.message}\n\n${result.reply}`)
+                                        } else {
+                                            setAssistantResponse(result.reply)
+                                        }
                                     } catch (err) {
                                         setAssistantResponse('Error al conectar con el asistente.')
                                     } finally {
