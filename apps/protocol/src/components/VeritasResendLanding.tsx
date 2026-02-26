@@ -435,7 +435,6 @@ function FaqSection() {
 }
 
 function GatekeeperPromoSection() {
-    const { t } = useTranslation()
     const [copied, setCopied] = useState(false)
 
     return (
