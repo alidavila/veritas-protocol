@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { ShieldCheck, Mail, Zap, ArrowRight, X, Bot, Search } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { agentsService } from '../lib/agents'
 
 // --- SYSTEM PRODUCTS (Hardcoded/Featured) ---
@@ -70,6 +71,7 @@ export function ServiceMarketplace({ theme = 'dark', lang = 'es' }: { theme?: 'd
     const [showDiagnostic, setShowDiagnostic] = useState(false)
     const [marketplaceAgents, setMarketplaceAgents] = useState<any[]>([])
     const { playHover, playClick } = useSoundEffects()
+    const navigate = useNavigate()
 
     useEffect(() => {
         fetchMarketplace()
@@ -152,28 +154,12 @@ export function ServiceMarketplace({ theme = 'dark', lang = 'es' }: { theme?: 'd
                         >
                             <X className="w-6 h-6" />
                         </button>
-                        <GeoAnalyzer onComplete={async (url) => {
-                            setDeploying(true)
-                            try {
-                                const newAgent = await agentsService.createAgent({
-                                    name: `Gatekeeper for ${url.replace(/https?:\/\//, '')}`,
-                                    type: 'custom',
-                                    description: `Veritas Gatekeeper active on ${url}. Monitoring AI traffic and collecting x402 tolls.`,
-                                    config: {
-                                        target_url: url,
-                                        version: '2.0',
-                                        protection: 'high'
-                                    }
-                                })
-                                setShowDiagnostic(false)
-                                setSelectedId(null)
-                                alert(`Nodo Activado: ${newAgent.name}\nDID: ${newAgent.id}\nWallet: ${newAgent.wallet_address}\n\nBienvenido a la Economía Agéntica.`)
-                            } catch (error) {
-                                console.error("Error activating node:", error)
-                                alert("Error al activar el nodo. Asegúrate de que el backend esté corriendo.")
-                            } finally {
-                                setDeploying(false)
-                            }
+                        <GeoAnalyzer onComplete={(url) => {
+                            // Redirect to login with activation params
+                            const domain = url.replace(/https?:\/\//, '').replace(/\/$/, '')
+                            setShowDiagnostic(false)
+                            setSelectedId(null)
+                            navigate(`/login?activate=gatekeeper&url=${encodeURIComponent(domain)}`)
                         }} />
                     </div>
                 </div>,

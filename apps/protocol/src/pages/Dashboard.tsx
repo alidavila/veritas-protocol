@@ -3,13 +3,13 @@
 import { Helmet } from 'react-helmet-async'
 import { askAssistant } from '../lib/gemini'
 import {
-    Users, Activity, LogOut, Wallet, Globe,
+    Users, Activity, LogOut, Wallet, Globe, ShieldCheck,
     Play, Square, Settings, Mail,
     MessageSquare, DollarSign, Megaphone,
-    Save, RefreshCw, PlusCircle, Send, Bot
+    Save, RefreshCw, PlusCircle, Send, Bot, Copy, CheckCircle
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useVeritasState } from '../hooks/useVeritasState'
 import { agentsService, Agent } from '../lib/agents'
@@ -32,6 +32,9 @@ export function DashboardPage() {
     const { t } = useTranslation()
     const [agents, setAgents] = useState<Agent[]>([])
     const [loading, setLoading] = useState(true)
+    const [searchParams] = useSearchParams()
+    const gatekeeperInstalled = searchParams.get('gatekeeper') === 'installed'
+    const [snippetCopied, setSnippetCopied] = useState(false)
 
     // Mission Control State — loads from Supabase
     const [mission, setMission] = useState({
@@ -187,6 +190,65 @@ export function DashboardPage() {
                             <p className="text-[10px] text-zinc-600 mt-1 uppercase">{t('dashboard.ethOnBase')}</p>
                         </div>
                     </div>
+
+                    {/* GATEKEEPER INSTALLATION PANEL */}
+                    {(gatekeeperInstalled || agents.some(a => a.name.toLowerCase().includes('gatekeeper'))) && (() => {
+                        const gkAgent = agents.find(a => a.name.toLowerCase().includes('gatekeeper'))
+                        const targetDomain = gkAgent?.description?.match(/active on ([^.]+\.[^.]+)/)?.[1] || 'tu-dominio.com'
+                        const snippet = `<script src="https://veritas-protocol-app.vercel.app/gatekeeper.js"
+  data-veritas-id="${gkAgent?.id?.slice(0, 8) || 'client-001'}"
+  data-wallet="0x4d2B70d358C5DA9c4fC6e8Ce743Ed67d55C19099"
+  data-rate="0.002"></script>`
+                        return (
+                            <div className="bg-emerald-950/20 border border-emerald-500/20 rounded-2xl p-6 animate-in fade-in slide-in-from-top-4 duration-700">
+                                <div className="flex items-start gap-4 mb-6">
+                                    <div className="w-12 h-12 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center justify-center shrink-0">
+                                        <ShieldCheck className="w-6 h-6 text-emerald-500" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-emerald-400 flex items-center gap-2">
+                                            🔒 Gatekeeper Activo
+                                            <span className="text-[10px] px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full font-mono">v2.0</span>
+                                        </h3>
+                                        <p className="text-sm text-zinc-400 mt-1">
+                                            Tu nodo está listo. Instala el script en <code className="text-emerald-400 bg-emerald-500/10 px-1 rounded">{targetDomain}</code> para empezar a detectar y cobrar a bots de IA.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Step by step */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                    <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
+                                        <div className="text-emerald-500 font-mono text-xs font-bold mb-2">PASO 1</div>
+                                        <p className="text-xs text-zinc-400">Copia el snippet de abajo</p>
+                                    </div>
+                                    <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
+                                        <div className="text-emerald-500 font-mono text-xs font-bold mb-2">PASO 2</div>
+                                        <p className="text-xs text-zinc-400">Pégalo en el <code className="text-emerald-400">&lt;head&gt;</code> de tu web</p>
+                                    </div>
+                                    <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
+                                        <div className="text-emerald-500 font-mono text-xs font-bold mb-2">PASO 3</div>
+                                        <p className="text-xs text-zinc-400">Listo! Bots de IA serán detectados automáticamente</p>
+                                    </div>
+                                </div>
+
+                                {/* Snippet */}
+                                <div className="relative bg-black rounded-xl border border-zinc-800 p-4 font-mono text-xs text-emerald-400">
+                                    <pre className="whitespace-pre-wrap break-all">{snippet}</pre>
+                                    <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(snippet)
+                                            setSnippetCopied(true)
+                                            setTimeout(() => setSnippetCopied(false), 2000)
+                                        }}
+                                        className="absolute top-3 right-3 px-3 py-1.5 bg-zinc-800 hover:bg-emerald-600 rounded-lg text-xs text-white transition-colors flex items-center gap-1.5"
+                                    >
+                                        {snippetCopied ? <><CheckCircle className="w-3 h-3" /> Copiado!</> : <><Copy className="w-3 h-3" /> Copiar</>}
+                                    </button>
+                                </div>
+                            </div>
+                        )
+                    })()}
 
                     {/* 2. SPLIT VIEW: FLEET & STRATEGY */}
                     <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">

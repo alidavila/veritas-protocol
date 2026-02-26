@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRight, ShieldCheck, Mail, AlertCircle, Lock, Eye, EyeOff } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { agentsService } from '../lib/agents'
 import { Helmet } from 'react-helmet-async'
 import { useAuth } from '../contexts/AuthContext'
 import { useTranslation } from 'react-i18next'
@@ -9,6 +10,9 @@ import { LanguageSwitcher } from '../components/LanguageSwitcher'
 
 export function LoginPage() {
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
+    const activateAgent = searchParams.get('activate')
+    const activateUrl = searchParams.get('url')
     const { signInWithGoogle, signInWithMagicLink, signInWithPassword, signUp, user } = useAuth()
     const { t } = useTranslation()
     const [loading, setLoading] = useState(false)
@@ -20,8 +24,49 @@ export function LoginPage() {
     const [sent, setSent] = useState(false)
 
     if (user) {
-        navigate('/dashboard')
+        // If user is already logged in and has activation params, create agent first
+        if (activateAgent === 'gatekeeper' && activateUrl) {
+            agentsService.createAgent({
+                name: `Gatekeeper for ${activateUrl}`,
+                type: 'support',
+                description: `Veritas Gatekeeper active on ${activateUrl}. Monitoring AI traffic and collecting x402 tolls.`,
+                config: {
+                    target_url: activateUrl,
+                    version: '2.0',
+                    protection: 'high'
+                }
+            }).then(() => {
+                navigate('/dashboard?gatekeeper=installed')
+            }).catch(() => {
+                navigate('/dashboard')
+            })
+        } else {
+            navigate('/dashboard')
+        }
         return null
+    }
+
+    // Helper: after successful auth, activate gatekeeper if params present
+    const postAuthAction = async () => {
+        if (activateAgent === 'gatekeeper' && activateUrl) {
+            try {
+                await agentsService.createAgent({
+                    name: `Gatekeeper for ${activateUrl}`,
+                    type: 'support',
+                    description: `Veritas Gatekeeper active on ${activateUrl}. Monitoring AI traffic and collecting x402 tolls.`,
+                    config: {
+                        target_url: activateUrl,
+                        version: '2.0',
+                        protection: 'high'
+                    }
+                })
+                navigate('/dashboard?gatekeeper=installed')
+            } catch {
+                navigate('/dashboard')
+            }
+        } else {
+            navigate('/dashboard')
+        }
     }
 
     const handlePasswordLogin = async (e: React.FormEvent) => {
@@ -30,7 +75,7 @@ export function LoginPage() {
         setError(null)
         try {
             await signInWithPassword(email, password)
-            navigate('/dashboard')
+            await postAuthAction()
         } catch (err: any) {
             if (err.message?.includes('Invalid login credentials')) {
                 setError(t('login.invalidCredentials'))
@@ -108,6 +153,16 @@ export function LoginPage() {
             <div className="absolute top-0 w-full h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
 
             <div className="w-full max-w-md relative z-10">
+                {/* Gatekeeper Activation Banner */}
+                {activateAgent === 'gatekeeper' && activateUrl && (
+                    <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500">
+                        <ShieldCheck className="w-6 h-6 text-emerald-500 shrink-0" />
+                        <div>
+                            <p className="text-sm font-bold text-emerald-400">Activando Gatekeeper</p>
+                            <p className="text-xs text-emerald-500/70">Inicia sesión para activar el nodo en <code className="text-emerald-400">{activateUrl}</code></p>
+                        </div>
+                    </div>
+                )}
                 <div className="text-center mb-8">
                     <Link to="/" className="inline-block mb-6 hover:scale-105 transition-transform">
                         <div className="w-16 h-16 bg-zinc-900/80 backdrop-blur border border-emerald-500/30 rounded-2xl flex items-center justify-center shadow-[0_0_40px_rgba(16,185,129,0.2)] mx-auto rotate-3">
