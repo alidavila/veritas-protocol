@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { ArrowRight, Check, Code2, Lock, Shield, Terminal, Zap, Wallet, Fingerprint } from 'lucide-react'
+import { ArrowRight, Check, Code2, Lock, Shield, Terminal, Zap, Wallet, Fingerprint, Copy, Globe, Download, CheckCircle } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { clsx, type ClassValue } from 'clsx'
@@ -22,6 +22,7 @@ export function VeritasResendLanding() {
             <KeyLifecycleSection />
             <MarketplaceSection />
             <EconomySection />
+            <GatekeeperPromoSection />
             <FaqSection />
             <CtaSection />
         </div>
@@ -432,3 +433,94 @@ function FaqSection() {
         </section>
     )
 }
+
+function GatekeeperPromoSection() {
+    const { t } = useTranslation()
+    const [copied, setCopied] = useState(false)
+
+    return (
+        <section className="py-32 px-6 relative border-t border-white/5 bg-zinc-950">
+            <div className="absolute inset-0 bg-emerald-900/5" />
+            <div className="max-w-7xl mx-auto relative z-10">
+                <div className="text-center space-y-6 mb-16">
+                    <div className="inline-flex items-center px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-widest text-emerald-400 border-emerald-500/20 bg-emerald-500/10">
+                        100% Gratis · Sin Registro
+                    </div>
+                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-medium leading-tight text-white mb-6">
+                        Protege tu Web <br />
+                        <span className="text-emerald-500 italic">de los Bots de IA.</span>
+                    </h2>
+                    <p className="max-w-xl mx-auto text-lg text-zinc-400">
+                        Instala el Gatekeeper en 30 segundos. Detecta GPTBot, ClaudeBot y 14 scrapers más. Cobra micropagos automáticos por acceso.
+                    </p>
+                </div>
+
+                {/* 3 Install Options */}
+                <div className="grid md:grid-cols-3 gap-6">
+
+                    {/* Option 1: Universal JS */}
+                    <div className="relative overflow-hidden rounded-3xl border border-emerald-500/30 bg-zinc-900/50 p-6 flex flex-col group hover:border-emerald-500/50 transition-colors">
+                        <div className="mb-4 w-12 h-12 rounded-2xl flex items-center justify-center bg-emerald-500/10">
+                            <Copy className="w-6 h-6 text-emerald-500" />
+                        </div>
+                        <h4 className="font-bold text-lg text-white mb-2">Universal (Cualquier Web)</h4>
+                        <p className="text-xs text-zinc-500 mb-4">Copia y pega en tu &lt;head&gt;</p>
+                        <div className="p-3 mb-4 rounded-xl font-mono text-[10px] leading-relaxed bg-black text-emerald-400 border border-zinc-800 break-all h-20 overflow-hidden flex items-center">
+                            {'<script src="veritas-protocol-app.vercel.app/gatekeeper.js"></script>'}
+                        </div>
+                        <div className="mt-auto">
+                            <button
+                                onClick={() => {
+                                    navigator.clipboard.writeText('<script src="https://veritas-protocol-app.vercel.app/gatekeeper.js" data-veritas-id="public" data-wallet="0x4d2B70d358C5DA9c4fC6e8Ce743Ed67d55C19099" data-rate="0.002"></script>')
+                                    setCopied(true)
+                                    setTimeout(() => setCopied(false), 2000)
+                                }}
+                                className="w-full py-3 rounded-xl font-bold text-sm bg-emerald-500 text-black hover:bg-emerald-400 transition-all flex items-center justify-center gap-2"
+                            >
+                                {copied ? <><CheckCircle className="w-4 h-4" /> Copiado!</> : <><Copy className="w-4 h-4" /> Copiar Snippet</>}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Option 2: WordPress */}
+                    <div className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6 flex flex-col group hover:border-blue-500/50 transition-colors">
+                        <div className="mb-4 w-12 h-12 rounded-2xl flex items-center justify-center bg-blue-500/10">
+                            <Globe className="w-6 h-6 text-blue-500" />
+                        </div>
+                        <h4 className="font-bold text-lg text-white mb-2">WordPress Plugin</h4>
+                        <p className="text-xs text-zinc-500 mb-4">Descarga e instala en 1 click</p>
+                        <div className="p-3 mb-4 rounded-xl text-center bg-black border border-zinc-800 h-20 flex items-center justify-center">
+                            <span className="font-mono text-xs text-zinc-400">veritas-gatekeeper.zip</span>
+                        </div>
+                        <div className="mt-auto">
+                            <a
+                                href="/veritas-gatekeeper.zip"
+                                className="w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 bg-white text-black hover:bg-zinc-200"
+                            >
+                                <Download className="w-4 h-4" /> Descargar Gratis
+                            </a>
+                        </div>
+                    </div>
+
+                    {/* Option 3: CLI */}
+                    <div className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6 flex flex-col group hover:border-purple-500/50 transition-colors">
+                        <div className="mb-4 w-12 h-12 rounded-2xl flex items-center justify-center bg-purple-500/10">
+                            <Terminal className="w-6 h-6 text-purple-500" />
+                        </div>
+                        <h4 className="font-bold text-lg text-white mb-2">Developer CLI</h4>
+                        <p className="text-xs text-zinc-500 mb-4">Genera tu DID desde la terminal</p>
+                        <div className="p-3 mb-4 rounded-xl font-mono text-[10px] leading-relaxed bg-black text-purple-400 border border-zinc-800 h-20 flex items-center">
+                            <span className="opacity-40 mr-2">$</span>npx veritas-cli init
+                        </div>
+                        <div className="mt-auto">
+                            <div className="w-full py-3 rounded-xl font-bold text-sm text-center bg-zinc-800 text-zinc-300 border border-zinc-700">
+                                Corre en tu Terminal →
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    )
+}
+

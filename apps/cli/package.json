@@ -1,20 +1,22 @@
 {
   "name": "veritas-cli",
-  "version": "2.0.0",
-  "description": "CLI para identidad y pagos de agentes Veritas - Conectado a Supabase",
+  "version": "2.1.0",
+  "description": "Zero-dependency CLI for Veritas Protocol. Generate Agent Identities (DID) and x402 wallets instantly.",
   "main": "index.js",
-  "type": "module",
   "bin": {
-    "veritas": "./index.js"
+    "veritas-cli": "./index.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.95.3",
-    "dotenv": "^17.2.4"
-  },
-  "keywords": [],
+  "keywords": [
+    "veritas",
+    "agent",
+    "did",
+    "identity",
+    "ai",
+    "crypto"
+  ],
   "author": "PulsoConnect LLC",
   "license": "ISC"
 }
