@@ -354,15 +354,22 @@ export function LandingSections({ theme, lang = 'es' }: { theme: 'dark' | 'light
                                 <h4 className={`font-bold text-lg ${isDark ? 'text-white' : 'text-zinc-900'}`}>{txt.gk_wp_title}</h4>
                                 <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-zinc-600'}`}>{txt.gk_wp_desc}</p>
                                 <div className={`p-3 rounded-xl text-center ${isDark ? 'bg-black border border-zinc-800' : 'bg-zinc-100 border border-zinc-200'}`}>
-                                    <span className={`font-mono text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>veritas-gatekeeper.php</span>
+                                    <span className={`font-mono text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>veritas-gatekeeper.zip</span>
                                 </div>
-                                <a
-                                    href="/veritas-gatekeeper.php"
-                                    download="veritas-gatekeeper.php"
+                                <button
+                                    onClick={() => {
+                                        const link = document.createElement('a');
+                                        link.href = '/veritas-gatekeeper.zip';
+                                        link.download = 'veritas-gatekeeper.zip';
+                                        link.target = '_blank';
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                    }}
                                     className={`w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${isDark ? 'bg-white text-black hover:bg-zinc-200' : 'bg-black text-white hover:bg-zinc-800'}`}
                                 >
                                     <Download className="w-4 h-4" /> Descargar Gratis
-                                </a>
+                                </button>
                             </div>
                         </SpotlightCard>
 

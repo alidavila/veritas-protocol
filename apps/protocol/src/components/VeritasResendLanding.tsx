@@ -492,12 +492,20 @@ function GatekeeperPromoSection() {
                             <span className="font-mono text-xs text-zinc-400">veritas-gatekeeper.zip</span>
                         </div>
                         <div className="mt-auto">
-                            <a
-                                href="/veritas-gatekeeper.zip"
+                            <button
+                                onClick={() => {
+                                    const link = document.createElement('a');
+                                    link.href = '/veritas-gatekeeper.zip';
+                                    link.download = 'veritas-gatekeeper.zip';
+                                    link.target = '_blank';
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                }}
                                 className="w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 bg-white text-black hover:bg-zinc-200"
                             >
                                 <Download className="w-4 h-4" /> Descargar Gratis
-                            </a>
+                            </button>
                         </div>
                     </div>
 
