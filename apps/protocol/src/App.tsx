@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { LoginPage } from './pages/Login'
 import { BroadcastPage } from './pages/BroadcastPage'
 import { DashboardPage } from './pages/Dashboard'
+import { AuditPage } from './pages/AuditPage'
 import { useAuth } from './contexts/AuthContext'
 
 // --- LAZY LOADED COMPONENTS ---
@@ -66,6 +67,7 @@ function App() {
                 <Suspense fallback={<LoadingFallback />}>
                     <Routes>
                         <Route path="/" element={<VeritasResendLanding />} />
+                        <Route path="/audit" element={<AuditPage />} />
                         <Route path="/login" element={<LoginPage />} />
 
                         {/* MAIN DASHBOARD — Admin sees everything, users see their view */}

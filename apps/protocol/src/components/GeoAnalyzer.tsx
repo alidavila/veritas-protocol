@@ -1,6 +1,7 @@
 
 import { useState } from 'react'
 import { Bot, Terminal, ShieldAlert, Cpu, Check, X, AlertTriangle } from 'lucide-react'
+import { agentsService } from '../lib/agents'
 
 // Simulation of a GEO analysis (The Trojan Horse)
 export function GeoAnalyzer({ onComplete }: { onComplete: (url: string) => void }) {
@@ -8,6 +9,22 @@ export function GeoAnalyzer({ onComplete }: { onComplete: (url: string) => void 
     const [url, setUrl] = useState('')
     const [analyzing, setAnalyzing] = useState(false)
     const [result, setResult] = useState<'INVISIBLE' | 'OPTIMIZED' | 'ERROR' | null>(null)
+    const [email, setEmail] = useState('')
+    const [emailSaved, setEmailSaved] = useState(false)
+
+    const handleSaveLead = async () => {
+        if (!email) return;
+        try {
+            await agentsService.logAction('LEAD_FOUND_INBOUND', {
+                email,
+                domain: url,
+                source: 'geo-analyzer'
+            });
+            setEmailSaved(true);
+        } catch (e) {
+            console.error("Failed to save lead", e);
+        }
+    }
 
     const validateUrl = (input: string) => {
         // Basic syntax check
@@ -194,16 +211,34 @@ export function GeoAnalyzer({ onComplete }: { onComplete: (url: string) => void 
                 </div>
 
                 <div className="pt-2">
-                    <button
-                        onClick={() => onComplete(url)}
-                        className="w-full py-4 rounded-xl font-bold bg-emerald-500 hover:bg-emerald-400 text-black transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] flex items-center justify-center gap-2 group"
-                    >
-                        <span>ACTIVAR NODO Y EMPEZAR A COBRAR</span>
-                        <Check className="w-4 h-4 group-hover:scale-125 transition-transform" />
-                    </button>
-                    <p className="text-center text-[10px] text-zinc-500 mt-3">
-                        Al hacer click, se creará tu identidad (DID) y tu billetera receptora.
-                    </p>
+                    {!emailSaved ? (
+                        <div className="space-y-3 bg-red-950/30 p-4 rounded-xl border border-red-900/50">
+                            <p className="text-xs text-red-200">Envíanos este reporte forense y el código de <b>The Gatekeeper</b> a tu correo:</p>
+                            <div className="flex gap-2">
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={e => setEmail(e.target.value)}
+                                    placeholder="tu@startup.com"
+                                    onKeyDown={(e) => e.key === 'Enter' && handleSaveLead()}
+                                    className="flex-1 bg-black border border-red-900/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500"
+                                />
+                                <button
+                                    onClick={handleSaveLead}
+                                    className="px-4 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg text-sm transition-colors cursor-pointer"
+                                >
+                                    Enviar
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="p-4 bg-emerald-950/30 rounded-xl border border-emerald-900/50 text-center animate-in fade-in zoom-in-95">
+                            <Check className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                            <p className="text-sm font-bold text-emerald-400">¡Reporte Enviado!</p>
+                            <p className="text-xs text-emerald-500/70 mt-1">Tu radar estará activado en breve. Revisa tu bandeja de entrada.</p>
+                            <button onClick={() => onComplete(url)} className="mt-4 px-4 py-2 bg-zinc-800 text-white font-bold text-xs rounded hover:bg-zinc-700">Omitir y seguir</button>
+                        </div>
+                    )}
                 </div>
             </div>
         )
