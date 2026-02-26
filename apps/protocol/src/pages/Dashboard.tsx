@@ -35,6 +35,7 @@ export function DashboardPage() {
     const [searchParams] = useSearchParams()
     const gatekeeperInstalled = searchParams.get('gatekeeper') === 'installed'
     const [snippetCopied, setSnippetCopied] = useState(false)
+    const [gkInstallTab, setGkInstallTab] = useState<'js' | 'wp'>('js')
 
     // Mission Control State — loads from Supabase
     const [mission, setMission] = useState({
@@ -216,38 +217,112 @@ export function DashboardPage() {
                                     </div>
                                 </div>
 
-                                {/* Step by step */}
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                    <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
-                                        <div className="text-emerald-500 font-mono text-xs font-bold mb-2">PASO 1</div>
-                                        <p className="text-xs text-zinc-400">Copia el snippet de abajo</p>
-                                    </div>
-                                    <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
-                                        <div className="text-emerald-500 font-mono text-xs font-bold mb-2">PASO 2</div>
-                                        <p className="text-xs text-zinc-400">Pégalo en el <code className="text-emerald-400">&lt;head&gt;</code> de tu web</p>
-                                    </div>
-                                    <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
-                                        <div className="text-emerald-500 font-mono text-xs font-bold mb-2">PASO 3</div>
-                                        <p className="text-xs text-zinc-400">Listo! Bots de IA serán detectados automáticamente</p>
-                                    </div>
+                                {/* Tabs Selector */}
+                                <div className="flex gap-2 mb-6 p-1 bg-black/40 rounded-xl border border-zinc-800 w-fit">
+                                    <button
+                                        onClick={() => setGkInstallTab('js')}
+                                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${gkInstallTab === 'js' ? 'bg-emerald-500 text-black' : 'text-zinc-500 hover:text-white'}`}
+                                    >
+                                        JavaScript (Universal)
+                                    </button>
+                                    <button
+                                        onClick={() => setGkInstallTab('wp')}
+                                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${gkInstallTab === 'wp' ? 'bg-emerald-500 text-black' : 'text-zinc-500 hover:text-white'}`}
+                                    >
+                                        WordPress Plugin
+                                    </button>
                                 </div>
 
-                                {/* Snippet */}
-                                <div className="relative bg-black rounded-xl border border-zinc-800 p-4 font-mono text-xs text-emerald-400">
-                                    <pre className="whitespace-pre-wrap break-all">{snippet}</pre>
-                                    <button
-                                        onClick={() => {
-                                            navigator.clipboard.writeText(snippet)
-                                            setSnippetCopied(true)
-                                            setTimeout(() => setSnippetCopied(false), 2000)
-                                        }}
-                                        className="absolute top-3 right-3 px-3 py-1.5 bg-zinc-800 hover:bg-emerald-600 rounded-lg text-xs text-white transition-colors flex items-center gap-1.5"
-                                    >
-                                        {snippetCopied ? <><CheckCircle className="w-3 h-3" /> Copiado!</> : <><Copy className="w-3 h-3" /> Copiar</>}
-                                    </button>
+                                {gkInstallTab === 'js' ? (
+                                    <>
+                                        {/* Step by step JS */}
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                            <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
+                                                <div className="text-emerald-500 font-mono text-[9px] font-bold mb-2">PASO 1</div>
+                                                <p className="text-[11px] text-zinc-400">Copia el script universal</p>
+                                            </div>
+                                            <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
+                                                <div className="text-emerald-500 font-mono text-[9px] font-bold mb-2">PASO 2</div>
+                                                <p className="text-[11px] text-zinc-400">Pégalo en el <code className="text-emerald-400">&lt;head&gt;</code></p>
+                                            </div>
+                                            <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
+                                                <div className="text-emerald-500 font-mono text-[9px] font-bold mb-2">PASO 3</div>
+                                                <p className="text-[11px] text-zinc-400">Detección activa en tiempo real</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Snippet */}
+                                        <div className="relative bg-black rounded-xl border border-zinc-800 p-4 font-mono text-[11px] text-emerald-400">
+                                            <pre className="whitespace-pre-wrap break-all">{snippet}</pre>
+                                            <button
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(snippet)
+                                                    setSnippetCopied(true)
+                                                    setTimeout(() => setSnippetCopied(false), 2000)
+                                                }}
+                                                className="absolute top-3 right-3 px-3 py-1.5 bg-zinc-800 hover:bg-emerald-600 rounded-lg text-[10px] text-white transition-colors flex items-center gap-1.5"
+                                            >
+                                                {snippetCopied ? <><CheckCircle className="w-3 h-3" /> Copiado!</> : <><Copy className="w-3 h-3" /> Copiar</>}
+                                            </button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="space-y-4">
+                                        <div className="bg-black/40 p-6 rounded-xl border border-zinc-800 text-center">
+                                            <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
+                                                <Globe className="w-8 h-8 text-emerald-500" />
+                                            </div>
+                                            <h4 className="text-white font-bold mb-2">Veritas Connector for WordPress</h4>
+                                            <p className="text-xs text-zinc-500 mb-6 max-w-sm mx-auto">
+                                                Usa nuestro plugin oficial para integrar Veritas en tu sitio WP sin tocar una sola línea de código.
+                                            </p>
+                                            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                                <a
+                                                    href="/veritas-gatekeeper.php"
+                                                    download="veritas-gatekeeper.php"
+                                                    className="px-6 py-3 bg-emerald-500 text-black rounded-xl font-bold text-xs hover:bg-emerald-400 transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    <PlusCircle className="w-4 h-4" />
+                                                    Descargar .php
+                                                </a>
+                                                <div className="px-6 py-3 bg-zinc-900 text-zinc-400 border border-zinc-800 rounded-xl font-bold text-xs flex items-center justify-center gap-2 cursor-help group relative">
+                                                    Manual de Instalación
+                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-zinc-800 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none text-[10px] shadow-xl">
+                                                        Sube el archivo a /wp-content/plugins/ y actívalo desde el admin.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* How it Works / Tutorial Section */}
+                                <div className="mt-8 pt-8 border-t border-emerald-500/10">
+                                    <h4 className="text-xs font-bold text-emerald-500/80 uppercase tracking-widest mb-4">¿Cómo funciona el "Portero"?</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-2 text-white font-bold text-sm">
+                                                <Bot className="w-4 h-4 text-emerald-500" />
+                                                Detección de Identidad
+                                            </div>
+                                            <p className="text-xs text-zinc-500 leading-relaxed">
+                                                Cuando un bot (GPTBot, Claude, etc.) llega a tu web, el Gatekeeper analiza su firma digital. Si no tiene una identidad verificada en Veritas, es interceptado.
+                                            </p>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-2 text-white font-bold text-sm">
+                                                <DollarSign className="w-4 h-4 text-emerald-500" />
+                                                Peaje x402
+                                            </div>
+                                            <p className="text-xs text-zinc-500 leading-relaxed">
+                                                Se le presenta al bot un contrato de micropago. El bot puede pagar 0.002 USDC (via Base) para acceder al contenido. Todo se graba en tu Ledger.
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )
+
                     })()}
 
                     {/* 2. SPLIT VIEW: FLEET & STRATEGY */}
