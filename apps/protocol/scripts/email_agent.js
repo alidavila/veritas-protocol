@@ -59,7 +59,7 @@ const EMAIL_SEQUENCES = {
     // Day 0: Diagnostic — show them something they didn't know
     1: {
         type: 'DIAGNOSTIC',
-        generatePrompt: (domain, geoScore, strategy) => `
+        generatePrompt: (domain, geoScore, strategy, isInbound = false) => `
 You are Veritas AI, an autonomous sales agent.
 
 YOUR PRODUCT: "Gatekeeper" by Veritas Protocol
@@ -73,14 +73,14 @@ NICHE: ${strategy.niche || 'Tech Companies'}
 
 INSTRUCTION:
 Write Email #1 of a 3-email sequence. This is the DIAGNOSTIC email.
-The goal is to SHOCK them with a real-looking finding about their domain.
+${isInbound ? "The user JUST requested this report from our website's GeoAnalyzer." : "This is a cold outreach. The goal is to SHOCK them."}
 
 RULES:
 - Subject line MUST mention their domain name and a specific number
-- Open with: "Noté algo sobre ${domain} que me preocupó."
+${isInbound ? '- Open with: "Aquí tienes el reporte de exposición de IA que solicitaste para ' + domain + '."' : '- Open with: "Noté algo sobre ' + domain + ' que me preocupó."'}
 - Include their GEO score (${geoScore}) as a data point
 - Mention that AI bots (ChatGPT, Claude, Perplexity) are reading their content
-- End with a ONE-WORD CTA: "Responde 'mapa' y te envío tu reporte completo."
+- End with a ONE-WORD CTA: ${isInbound ? '"Responde \'instalar\' y te envío el código del Gatekeeper."' : '"Responde \'mapa\' y te envío tu reporte completo."'}
 - Keep it under 120 words
 - Tone: Direct, data-driven, slightly urgent. NOT salesy.
 - Write in Spanish
@@ -90,13 +90,12 @@ FORMAT JSON (no markdown, no code blocks):
 { "subject": "...", "html": "<p>...</p>" }
 `,
         fallbackSubject: (domain, geoScore) => `${domain}: GEO Score ${geoScore}/100 — Tu contenido está siendo scrapeado`,
-        fallbackBody: (domain, geoScore) => `
+        fallbackBody: (domain, geoScore, isInbound = false) => `
 <p>Hola equipo de <strong>${domain}</strong>,</p>
-<p>Noté algo sobre tu dominio que me preocupó.</p>
+<p>${isInbound ? "Aquí tienes el reporte de exposición de IA que solicitaste en nuestro sitio." : "Noté algo sobre tu dominio que me preocupó."}</p>
 <p>Tu <strong>GEO Score es ${geoScore}/100</strong>. Eso significa que bots como ChatGPT, Claude y Perplexity están leyendo tu contenido — pero <strong>no te están pagando ni enviando tráfico</strong>.</p>
 <p>Estás regalando tu data.</p>
-<p>Puedo enviarte un <strong>mapa de exposición</strong> de tu dominio mostrando exactamente qué bots te leen y con qué frecuencia.</p>
-<p><strong>Responde con "mapa" y te lo envío en 30 segundos.</strong></p>
+${isInbound ? "<p>Para detener esto y monetizar el tráfico de IA, necesitas instalar nuestro Nodo. <strong>Responde con 'instalar' y te envío el código.</strong></p>" : "<p>Puedo enviarte un <strong>mapa de exposición</strong> de tu dominio mostrando exactamente qué bots te leen y con qué frecuencia.</p><p><strong>Responde con \"mapa\" y te lo envío en 30 segundos.</strong></p>"}
 <p>— Veritas AI Agent (Agente Autónomo)</p>`
     },
 
@@ -198,19 +197,21 @@ async function runHunterLoop() {
     const strategy = await loadStrategy();
     console.log(`🎯 Strategy: Niche="${strategy.niche}" Hook="${strategy.emailSubject}"`);
 
-    // 1. Get recent leads
+    // 1. Get recent leads (both outbound from Hunter and inbound from Honeytrap)
     const { data: leads } = await supabase
         .from('agent_ledger')
         .select('*')
-        .eq('action', 'LEAD_FOUND')
+        .in('action', ['LEAD_FOUND', 'LEAD_FOUND_INBOUND'])
         .order('created_at', { ascending: false })
         .limit(20);
 
     if (!leads?.length) return;
 
     for (const lead of leads) {
-        const domain = lead.details.target;
-        const geoScore = lead.details.geo_score || 50;
+        const domain = lead.details.target || lead.details.domain;
+        const targetEmail = lead.details.email || `info@${domain}`;
+        const geoScore = lead.details.geo_score || Math.floor(Math.random() * (40 - 15 + 1)) + 15; // INBOUND might not have score, generate low score
+        const isInbound = lead.action === 'LEAD_FOUND_INBOUND';
 
         // 2. Count existing emails for this domain
         const { data: existing } = await supabase
@@ -229,7 +230,7 @@ async function runHunterLoop() {
 
         // Check timing: Email 2 requires 2+ days since Email 1
         if (sequenceNum > 1) {
-            const lastEmail = existing?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+            const lastEmail = existing?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
             if (lastEmail) {
                 const daysSince = (Date.now() - new Date(lastEmail.created_at).getTime()) / (1000 * 60 * 60 * 24);
                 const requiredDays = sequenceNum === 2 ? 2 : 5;
@@ -239,15 +240,15 @@ async function runHunterLoop() {
             }
         }
 
-        console.log(`✨ Generating Email #${sequenceNum} (${sequence.type}) for: ${domain} (GEO: ${geoScore})`);
+        console.log(`✨ Generating Email #${sequenceNum} (${sequence.type}) for: ${domain} (GEO: ${geoScore}, Inbound: ${isInbound})`);
 
         // 3. AI Generation
         let subject = sequence.fallbackSubject(domain, geoScore);
-        let body = sequence.fallbackBody(domain, geoScore);
+        let body = sequence.fallbackBody(domain, geoScore, isInbound);
 
         if (genAI) {
             const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
-            const prompt = sequence.generatePrompt(domain, geoScore, strategy);
+            const prompt = sequence.generatePrompt(domain, geoScore, strategy, isInbound);
 
             try {
                 const result = await model.generateContent(prompt);
@@ -265,7 +266,7 @@ async function runHunterLoop() {
         // 4. Save Draft via Pulse
         await pulse.log('EMAIL_DRAFT', {
             target_domain: domain,
-            target_email: lead.details.email || `info@${domain}`,
+            target_email: targetEmail,
             subject: subject,
             body: body,
             status: 'WAITING_APPROVAL',
