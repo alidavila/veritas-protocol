@@ -62,7 +62,7 @@ async function processCommands() {
 
             // --- AI PARSING ---
             if (genAI) {
-                const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
                 const prompt = `
                 ACT AS: Veritas Router (Command & Control).
                 INPUT: "${cmd.command}"

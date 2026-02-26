@@ -186,182 +186,184 @@ export function DashboardPage() {
                             <h3 className="text-2xl font-bold">{treasury.toFixed(4)} ETH</h3>
                             <p className="text-[10px] text-zinc-600 mt-1 uppercase">FLUJO DE CAJA LIBRE</p>
                         </div>
-                    </div>
+                    </div >
 
                     {/* GATEKEEPER INSTALLATION PANEL */}
-                    {(gatekeeperInstalled || agents.some(a => a.name.toLowerCase().includes('gatekeeper'))) && (() => {
-                        const gkAgent = agents.find(a => a.name.toLowerCase().includes('gatekeeper'))
-                        const targetDomain = gkAgent?.description?.match(/active on ([^.]+\.[^.]+)/)?.[1] || 'tu-dominio.com'
-                        const snippet = `<script src="https://veritas-protocol-app.vercel.app/gatekeeper.js"
+                    {
+                        (gatekeeperInstalled || agents.some(a => a.name.toLowerCase().includes('gatekeeper'))) && (() => {
+                            const gkAgent = agents.find(a => a.name.toLowerCase().includes('gatekeeper'))
+                            const targetDomain = gkAgent?.description?.match(/active on ([^.]+\.[^.]+)/)?.[1] || 'tu-dominio.com'
+                            const snippet = `<script src="https://veritas-protocol-app.vercel.app/gatekeeper.js"
   data-veritas-id="${gkAgent?.id?.slice(0, 8) || 'client-001'}"
   data-wallet="0x4d2B70d358C5DA9c4fC6e8Ce743Ed67d55C19099"
   data-rate="0.002"></script>`
-                        return (
-                            <div className="bg-emerald-950/20 border border-emerald-500/20 rounded-2xl p-6 animate-in fade-in slide-in-from-top-4 duration-700">
-                                <div className="flex items-start gap-4 mb-6">
-                                    <div className="w-12 h-12 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center justify-center shrink-0">
-                                        <ShieldCheck className="w-6 h-6 text-emerald-500" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-bold text-emerald-400 flex items-center gap-2">
-                                            🔒 Gatekeeper Activo
-                                            <span className="text-[10px] px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full font-mono">v2.0</span>
-                                        </h3>
-                                        <p className="text-sm text-zinc-400 mt-1">
-                                            Tu nodo está listo. Instala el script en <code className="text-emerald-400 bg-emerald-500/10 px-1 rounded">{targetDomain}</code> para empezar a detectar y cobrar a bots de IA.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Tabs Selector */}
-                                <div className="flex gap-2 mb-6 p-1 bg-black/40 rounded-xl border border-zinc-800 w-fit">
-                                    <button
-                                        onClick={() => setGkInstallTab('js')}
-                                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${gkInstallTab === 'js' ? 'bg-emerald-500 text-black' : 'text-zinc-500 hover:text-white'}`}
-                                    >
-                                        JavaScript (Universal)
-                                    </button>
-                                    <button
-                                        onClick={() => setGkInstallTab('wp')}
-                                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${gkInstallTab === 'wp' ? 'bg-emerald-500 text-black' : 'text-zinc-500 hover:text-white'}`}
-                                    >
-                                        WordPress Plugin
-                                    </button>
-                                </div>
-
-                                {gkInstallTab === 'js' ? (
-                                    <>
-                                        {/* Step by step JS */}
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                            <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
-                                                <div className="text-emerald-500 font-mono text-[9px] font-bold mb-2">PASO 1</div>
-                                                <p className="text-[11px] text-zinc-400">Copia el script universal</p>
-                                            </div>
-                                            <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
-                                                <div className="text-emerald-500 font-mono text-[9px] font-bold mb-2">PASO 2</div>
-                                                <p className="text-[11px] text-zinc-400">Pégalo en el <code className="text-emerald-400">&lt;head&gt;</code></p>
-                                            </div>
-                                            <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
-                                                <div className="text-emerald-500 font-mono text-[9px] font-bold mb-2">PASO 3</div>
-                                                <p className="text-[11px] text-zinc-400">Detección activa en tiempo real</p>
-                                            </div>
+                            return (
+                                <div className="bg-emerald-950/20 border border-emerald-500/20 rounded-2xl p-6 animate-in fade-in slide-in-from-top-4 duration-700">
+                                    <div className="flex items-start gap-4 mb-6">
+                                        <div className="w-12 h-12 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center justify-center shrink-0">
+                                            <ShieldCheck className="w-6 h-6 text-emerald-500" />
                                         </div>
-
-                                        {/* Snippet */}
-                                        <div className="relative bg-black rounded-xl border border-zinc-800 p-4 font-mono text-[11px] text-emerald-400">
-                                            <pre className="whitespace-pre-wrap break-all">{snippet}</pre>
-                                            <button
-                                                onClick={() => {
-                                                    navigator.clipboard.writeText(snippet)
-                                                    setSnippetCopied(true)
-                                                    setTimeout(() => setSnippetCopied(false), 2000)
-                                                }}
-                                                className="absolute top-3 right-3 px-3 py-1.5 bg-zinc-800 hover:bg-emerald-600 rounded-lg text-[10px] text-white transition-colors flex items-center gap-1.5"
-                                            >
-                                                {snippetCopied ? <><CheckCircle className="w-3 h-3" /> Copiado!</> : <><Copy className="w-3 h-3" /> Copiar</>}
-                                            </button>
-                                        </div>
-                                    </>
-                                ) : gkInstallTab === 'wp' ? (
-                                    <div className="space-y-4">
-                                        <div className="bg-black/40 p-6 rounded-xl border border-zinc-800 text-center">
-                                            <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
-                                                <Globe className="w-8 h-8 text-emerald-500" />
-                                            </div>
-                                            <h4 className="text-white font-bold mb-2">Veritas Connector for WordPress</h4>
-                                            <p className="text-xs text-zinc-500 mb-6 max-w-sm mx-auto">
-                                                Usa nuestro plugin oficial para integrar Veritas en tu sitio WP sin tocar una sola línea de código.
+                                        <div>
+                                            <h3 className="text-lg font-bold text-emerald-400 flex items-center gap-2">
+                                                🔒 Gatekeeper Activo
+                                                <span className="text-[10px] px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full font-mono">v2.0</span>
+                                            </h3>
+                                            <p className="text-sm text-zinc-400 mt-1">
+                                                Tu nodo está listo. Instala el script en <code className="text-emerald-400 bg-emerald-500/10 px-1 rounded">{targetDomain}</code> para empezar a detectar y cobrar a bots de IA.
                                             </p>
-                                            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                                                <a
-                                                    href="/veritas-gatekeeper.php"
-                                                    download="veritas-gatekeeper.php"
-                                                    className="px-6 py-3 bg-emerald-500 text-black rounded-xl font-bold text-xs hover:bg-emerald-400 transition-all flex items-center justify-center gap-2"
+                                        </div>
+                                    </div>
+
+                                    {/* Tabs Selector */}
+                                    <div className="flex gap-2 mb-6 p-1 bg-black/40 rounded-xl border border-zinc-800 w-fit">
+                                        <button
+                                            onClick={() => setGkInstallTab('js')}
+                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${gkInstallTab === 'js' ? 'bg-emerald-500 text-black' : 'text-zinc-500 hover:text-white'}`}
+                                        >
+                                            JavaScript (Universal)
+                                        </button>
+                                        <button
+                                            onClick={() => setGkInstallTab('wp')}
+                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${gkInstallTab === 'wp' ? 'bg-emerald-500 text-black' : 'text-zinc-500 hover:text-white'}`}
+                                        >
+                                            WordPress Plugin
+                                        </button>
+                                    </div>
+
+                                    {gkInstallTab === 'js' ? (
+                                        <>
+                                            {/* Step by step JS */}
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                                <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
+                                                    <div className="text-emerald-500 font-mono text-[9px] font-bold mb-2">PASO 1</div>
+                                                    <p className="text-[11px] text-zinc-400">Copia el script universal</p>
+                                                </div>
+                                                <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
+                                                    <div className="text-emerald-500 font-mono text-[9px] font-bold mb-2">PASO 2</div>
+                                                    <p className="text-[11px] text-zinc-400">Pégalo en el <code className="text-emerald-400">&lt;head&gt;</code></p>
+                                                </div>
+                                                <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
+                                                    <div className="text-emerald-500 font-mono text-[9px] font-bold mb-2">PASO 3</div>
+                                                    <p className="text-[11px] text-zinc-400">Detección activa en tiempo real</p>
+                                                </div>
+                                            </div>
+
+                                            {/* Snippet */}
+                                            <div className="relative bg-black rounded-xl border border-zinc-800 p-4 font-mono text-[11px] text-emerald-400">
+                                                <pre className="whitespace-pre-wrap break-all">{snippet}</pre>
+                                                <button
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(snippet)
+                                                        setSnippetCopied(true)
+                                                        setTimeout(() => setSnippetCopied(false), 2000)
+                                                    }}
+                                                    className="absolute top-3 right-3 px-3 py-1.5 bg-zinc-800 hover:bg-emerald-600 rounded-lg text-[10px] text-white transition-colors flex items-center gap-1.5"
                                                 >
-                                                    <PlusCircle className="w-4 h-4" />
-                                                    Descargar .php
-                                                </a>
-                                                <div className="px-6 py-3 bg-zinc-900 text-zinc-400 border border-zinc-800 rounded-xl font-bold text-xs flex items-center justify-center gap-2 cursor-help group relative">
-                                                    Manual de Instalación
-                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-zinc-800 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none text-[10px] shadow-xl">
-                                                        Sube el archivo a /wp-content/plugins/ y actívalo desde el admin.
+                                                    {snippetCopied ? <><CheckCircle className="w-3 h-3" /> Copiado!</> : <><Copy className="w-3 h-3" /> Copiar</>}
+                                                </button>
+                                            </div>
+                                        </>
+                                    ) : gkInstallTab === 'wp' ? (
+                                        <div className="space-y-4">
+                                            <div className="bg-black/40 p-6 rounded-xl border border-zinc-800 text-center">
+                                                <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
+                                                    <Globe className="w-8 h-8 text-emerald-500" />
+                                                </div>
+                                                <h4 className="text-white font-bold mb-2">Veritas Connector for WordPress</h4>
+                                                <p className="text-xs text-zinc-500 mb-6 max-w-sm mx-auto">
+                                                    Usa nuestro plugin oficial para integrar Veritas en tu sitio WP sin tocar una sola línea de código.
+                                                </p>
+                                                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                                    <a
+                                                        href="/veritas-gatekeeper.php"
+                                                        download="veritas-gatekeeper.php"
+                                                        className="px-6 py-3 bg-emerald-500 text-black rounded-xl font-bold text-xs hover:bg-emerald-400 transition-all flex items-center justify-center gap-2"
+                                                    >
+                                                        <PlusCircle className="w-4 h-4" />
+                                                        Descargar .php
+                                                    </a>
+                                                    <div className="px-6 py-3 bg-zinc-900 text-zinc-400 border border-zinc-800 rounded-xl font-bold text-xs flex items-center justify-center gap-2 cursor-help group relative">
+                                                        Manual de Instalación
+                                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-zinc-800 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none text-[10px] shadow-xl">
+                                                            Sube el archivo a /wp-content/plugins/ y actívalo desde el admin.
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {/* Step by step CLI */}
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                            <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
-                                                <div className="text-emerald-500 font-mono text-[9px] font-bold mb-2">PASO 1</div>
-                                                <p className="text-[11px] text-zinc-400">Instala el estándar via NPX</p>
-                                            </div>
-                                            <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
-                                                <div className="text-emerald-500 font-mono text-[9px] font-bold mb-2">PASO 2</div>
-                                                <p className="text-[11px] text-zinc-400">Genera tu DID y Wallet local</p>
-                                            </div>
-                                            <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
-                                                <div className="text-emerald-500 font-mono text-[9px] font-bold mb-2">PASO 3</div>
-                                                <p className="text-[11px] text-zinc-400">Firma challenges de IA</p>
-                                            </div>
-                                        </div>
-
-                                        {/* CLI Commands */}
-                                        <div className="bg-black rounded-xl border border-zinc-800 p-4 font-mono text-[11px] space-y-2">
-                                            <div className="flex justify-between items-center text-zinc-500 border-b border-zinc-900 pb-2 mb-2">
-                                                <span>Veritas Protocol CLI</span>
-                                                <div className="flex gap-1">
-                                                    <div className="w-2 h-2 rounded-full bg-red-500/30"></div>
-                                                    <div className="w-2 h-2 rounded-full bg-yellow-500/30"></div>
-                                                    <div className="w-2 h-2 rounded-full bg-green-500/30"></div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {/* Step by step CLI */}
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                                <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
+                                                    <div className="text-emerald-500 font-mono text-[9px] font-bold mb-2">PASO 1</div>
+                                                    <p className="text-[11px] text-zinc-400">Instala el estándar via NPX</p>
+                                                </div>
+                                                <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
+                                                    <div className="text-emerald-500 font-mono text-[9px] font-bold mb-2">PASO 2</div>
+                                                    <p className="text-[11px] text-zinc-400">Genera tu DID y Wallet local</p>
+                                                </div>
+                                                <div className="bg-black/40 p-4 rounded-xl border border-zinc-800">
+                                                    <div className="text-emerald-500 font-mono text-[9px] font-bold mb-2">PASO 3</div>
+                                                    <p className="text-[11px] text-zinc-400">Firma challenges de IA</p>
                                                 </div>
                                             </div>
-                                            <div className="text-emerald-500">
-                                                <span className="opacity-50 mr-2">$</span> npx veritas-cli init
-                                                <span className="text-zinc-600 ml-4"># Genera tu identidad descentralizada</span>
-                                            </div>
-                                            <div className="text-emerald-500">
-                                                <span className="opacity-50 mr-2">$</span> npx veritas-cli status
-                                                <span className="text-zinc-600 ml-4"># Muestra tu DID y Wallet</span>
-                                            </div>
-                                            <div className="text-emerald-500">
-                                                <span className="opacity-50 mr-2">$</span> npx veritas-cli sign "challenge_123"
-                                                <span className="text-zinc-600 ml-4"># Firma para identificarte</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
 
-                                {/* How it Works / Tutorial Section */}
-                                <div className="mt-8 pt-8 border-t border-emerald-500/10">
-                                    <h4 className="text-xs font-bold text-emerald-500/80 uppercase tracking-widest mb-4">¿Cómo funciona el "Portero"?</h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-3">
-                                            <div className="flex items-center gap-2 text-white font-bold text-sm">
-                                                <Bot className="w-4 h-4 text-emerald-500" />
-                                                Detección de Identidad
+                                            {/* CLI Commands */}
+                                            <div className="bg-black rounded-xl border border-zinc-800 p-4 font-mono text-[11px] space-y-2">
+                                                <div className="flex justify-between items-center text-zinc-500 border-b border-zinc-900 pb-2 mb-2">
+                                                    <span>Veritas Protocol CLI</span>
+                                                    <div className="flex gap-1">
+                                                        <div className="w-2 h-2 rounded-full bg-red-500/30"></div>
+                                                        <div className="w-2 h-2 rounded-full bg-yellow-500/30"></div>
+                                                        <div className="w-2 h-2 rounded-full bg-green-500/30"></div>
+                                                    </div>
+                                                </div>
+                                                <div className="text-emerald-500">
+                                                    <span className="opacity-50 mr-2">$</span> npx veritas-cli init
+                                                    <span className="text-zinc-600 ml-4"># Genera tu identidad descentralizada</span>
+                                                </div>
+                                                <div className="text-emerald-500">
+                                                    <span className="opacity-50 mr-2">$</span> npx veritas-cli status
+                                                    <span className="text-zinc-600 ml-4"># Muestra tu DID y Wallet</span>
+                                                </div>
+                                                <div className="text-emerald-500">
+                                                    <span className="opacity-50 mr-2">$</span> npx veritas-cli sign "challenge_123"
+                                                    <span className="text-zinc-600 ml-4"># Firma para identificarte</span>
+                                                </div>
                                             </div>
-                                            <p className="text-xs text-zinc-500 leading-relaxed">
-                                                Cuando un bot (GPTBot, Claude, etc.) llega a tu web, el Gatekeeper analiza su firma digital. Si no tiene una identidad verificada en Veritas, es interceptado.
-                                            </p>
                                         </div>
-                                        <div className="space-y-3">
-                                            <div className="flex items-center gap-2 text-white font-bold text-sm">
-                                                <DollarSign className="w-4 h-4 text-emerald-500" />
-                                                Peaje x402
+                                    )}
+
+                                    {/* How it Works / Tutorial Section */}
+                                    <div className="mt-8 pt-8 border-t border-emerald-500/10">
+                                        <h4 className="text-xs font-bold text-emerald-500/80 uppercase tracking-widest mb-4">¿Cómo funciona el "Portero"?</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-3">
+                                                <div className="flex items-center gap-2 text-white font-bold text-sm">
+                                                    <Bot className="w-4 h-4 text-emerald-500" />
+                                                    Detección de Identidad
+                                                </div>
+                                                <p className="text-xs text-zinc-500 leading-relaxed">
+                                                    Cuando un bot (GPTBot, Claude, etc.) llega a tu web, el Gatekeeper analiza su firma digital. Si no tiene una identidad verificada en Veritas, es interceptado.
+                                                </p>
                                             </div>
-                                            <p className="text-xs text-zinc-500 leading-relaxed">
-                                                Se le presenta al bot un contrato de micropago. El bot puede pagar 0.002 USDC (via Base) para acceder al contenido. Todo se graba en tu Ledger.
-                                            </p>
+                                            <div className="space-y-3">
+                                                <div className="flex items-center gap-2 text-white font-bold text-sm">
+                                                    <DollarSign className="w-4 h-4 text-emerald-500" />
+                                                    Peaje x402
+                                                </div>
+                                                <p className="text-xs text-zinc-500 leading-relaxed">
+                                                    Se le presenta al bot un contrato de micropago. El bot puede pagar 0.002 USDC (via Base) para acceder al contenido. Todo se graba en tu Ledger.
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        )
+                            )
 
-                    })()}
+                        })()
+                    }
 
                     {/* 2. STRATEGY & AGENT SYSTEM */}
                     <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -563,8 +565,8 @@ export function DashboardPage() {
                             </form>
                         </div>
                     </section>
-                </div>
-            </main>
-        </div>
+                </div >
+            </main >
+        </div >
     )
 }

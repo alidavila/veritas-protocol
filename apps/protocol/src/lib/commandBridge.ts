@@ -114,7 +114,6 @@ export async function executeAssistantCommand(
                             .eq('id', draft.id)
                     }
                 }
-
                 return { success: true, message: `${count} borradores aprobados.`, action: 'approve' }
             }
 

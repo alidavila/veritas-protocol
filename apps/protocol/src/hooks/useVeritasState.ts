@@ -119,7 +119,7 @@ export function useVeritasState() {
                 .select('*', { count: 'exact', head: true })
                 .in('action', ['TOLL_COLLECTED', 'PAYMENT_ACCEPTED']);
 
-            // Count gatekeeper installations (agents with gatekeeper in name)
+            // Count gatekeeper installations (agents registered)
             const { count: gkCount } = await supabase
                 .from('agents')
                 .select('*', { count: 'exact', head: true });
@@ -170,7 +170,7 @@ function mapSupabaseToTx(row: any): Transaction {
         from: row.agent_id || 'Unknown',
         to: details.to || 'Veritas Core',
         amount: parseFloat(row.amount || 0),
-        fee: 0, // We can simulate fee
+        fee: 0,
         timestamp: new Date(row.created_at).getTime(),
         note: row.action + (details.message ? `: ${details.message}` : '') + (details.reason ? `: ${details.reason}` : '') + (details.recipient ? ` -> ${details.recipient}` : '')
     };
