@@ -4,6 +4,9 @@
   "outputDirectory": "apps/protocol/dist",
   "framework": "vite",
   "rewrites": [
+    { "source": "/.well-known/acp", "destination": "/api/acp" },
+    { "source": "/api/acp", "destination": "/api/acp" },
+    { "source": "/api/acp/(.*)", "destination": "/api/acp" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

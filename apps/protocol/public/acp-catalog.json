@@ -1,0 +1,84 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-07-07T00:00:00Z",
+  "business": {
+    "name": "Veritas Protocol",
+    "url": "https://veritas-protocol-beryl.vercel.app",
+    "description": "Identity & Payment Infrastructure for AI Agents",
+    "stripe_account": "acct_1TC3VeCCwrZ0i1Mx",
+    "acp_compliant": true
+  },
+  "products": [
+    {
+      "id": "gatekeeper-v1",
+      "name": "The Gatekeeper",
+      "description": "AI bot detection & x402 paywall. Protect your website from unauthorized AI scraping. Detects GPTBot, Claude-Web, PerplexityBot and 15+ AI crawlers.",
+      "category": "infrastructure",
+      "price_usd": 0,
+      "billing_model": "free_tier_with_fee",
+      "fee_percent": 1.0,
+      "available": true,
+      "url": "https://veritas-protocol-beryl.vercel.app/marketplace/gatekeeper"
+    },
+    {
+      "id": "auto-marketer-v1",
+      "name": "Auto-Marketer v1",
+      "description": "Autonomous cold email outreach agent. Finds leads, generates personalized email sequences via Gemini AI, and sends through Resend. Includes Supabase analytics dashboard.",
+      "category": "growth_agent",
+      "price_usd": 49,
+      "billing_model": "subscription_monthly",
+      "available": true,
+      "url": "https://veritas-protocol-beryl.vercel.app/marketplace/auto-marketer"
+    },
+    {
+      "id": "ghost-auditor-v1",
+      "name": "Ghost Auditor",
+      "description": "AI-powered security analysis tool. Uses Gemini AI to generate attack payloads, perform forensic analysis, and create Playwright automation scripts for security testing.",
+      "category": "security_agent",
+      "price_usd": 49,
+      "billing_model": "subscription_monthly",
+      "available": true,
+      "url": "https://veritas-protocol-beryl.vercel.app/marketplace/ghost-auditor"
+    },
+    {
+      "id": "veritas-did",
+      "name": "Veritas DID Registration",
+      "description": "Decentralized Identifier (DID) registration for AI agents. Required identity layer for participating in agentic commerce. Includes wallet creation on Base Sepolia.",
+      "category": "identity",
+      "price_usd": 0,
+      "billing_model": "one_time",
+      "available": true,
+      "url": "https://veritas-protocol-beryl.vercel.app/register"
+    },
+    {
+      "id": "hunter-agent",
+      "name": "Hunter Agent",
+      "description": "Autonomous lead discovery agent. Scrapes 20+ seed URLs for robots.txt, JSON-LD, and GEO scores. Logs discovered leads to ledger for Marketer agent.",
+      "category": "lead_agent",
+      "price_usd": 29,
+      "billing_model": "subscription_monthly",
+      "available": false,
+      "url": "https://veritas-protocol-beryl.vercel.app/marketplace/hunter"
+    },
+    {
+      "id": "sentinel-agent",
+      "name": "Sentinel Agent",
+      "description": "Compliance and fraud detection agent. Continuously audits agent_ledger for suspicious patterns and triggers alerts.",
+      "category": "compliance_agent",
+      "price_usd": 29,
+      "billing_model": "subscription_monthly",
+      "available": false,
+      "url": "https://veritas-protocol-beryl.vercel.app/marketplace/sentinel"
+    },
+    {
+      "id": "treasurer-agent",
+      "name": "Treasurer Agent",
+      "description": "Wallet management and x402 payment processing agent on Base Sepolia. Manages ETH balances, processes payments, and reports to ledger.",
+      "category": "finance_agent",
+      "price_usd": 19,
+      "billing_model": "subscription_monthly",
+      "available": false,
+      "url": "https://veritas-protocol-beryl.vercel.app/marketplace/treasurer"
+    }
+  ]
+}
